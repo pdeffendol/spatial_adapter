@@ -1,0 +1,40 @@
+=MySQL Spatial Adapter for Rails
+This is a MySQL Spatial Adapter for Rails 0.0.1. It is a plugin for Rails which manages the MySql Spatial geometric columns in a transparent way (that is like the other base data type columns), as well as a way to manage these columns in migrations.
+
+===Dependencies
+You need to install the last version of the GeoRuby gem (http://rubyforge.org/projects/georuby/).
+
+===Operations
+Geometric columns in your ActiveRecord models now appear just like any other column of other basic data types. No new operations (for example spatial queries) are provided but they will be in a future version. New migrations operations are possible. These are :
+- add_geometry_column
+- drop_geometry_column
+- add_spatial_index
+
+
+===Warning
+If you use a version of MySQL before 5.0.16, only tables using the MyISAM engine can support geometric columns. After MySQL 5.0.16, any engine (incuding INNODB) is supported. 
+
+Since ActiveRecord seems to keep only the string values directly returned from the database, it translates from these to the correct types everytime an attribute is read, which is probably ok for simple types, but might be less than efficient for geometries, since the EWKB string has to be parsed everytime. Also it means you cannot modify the geometry object returned from an attribute directly :
+       place = Place.find_first
+       place.the_geom.y=123456.7
+      
+Since the translation to a geometry is performed everytime the_geom is read, the change to y will not be saved! You would have to do something like this :    
+       place = Place.find_first
+       the_geom = place.the_geom
+       the_geom.y=123456.7
+       place.the_geom = the_geom
+
+===Changes to the ActiveRecord classes
+For this plugin changes have been made to the ActiveRecord::ConnectionAdapters::Column class, to add support for the translation of geometric columns from a string (returned as a WKB variant by MySQL Spatial) to a geometry, as implemented in the GeoRuby library. Changes have also been made to the ActiveRecord::ConnectionAdapters::MySQLAdapter, to add support for writing geometries to the database, as well as migrations.
+
+===Installation
+At the root of your Rails project, type :
+       script\plugin install svn://rubyforge.org/var/svn/georuby/PostGISAdapter/trunk/mysql_spatial_adapter
+You need to have SVN installed.
+
+
+===License
+MySQL Spatial Adapter is released under the MIT license.
+
+===Support
+Any questions, enhancement proposals, bug notifications or corrections can be sent to mailto:guilhem.vellut+georuby@gmail.com.

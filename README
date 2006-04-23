@@ -1,15 +1,11 @@
 =MySQL Spatial Adapter for Rails
-This is MySQL Spatial Adapter for Rails 0.0.1. It is a plugin for Rails which manages the MySql Spatial geometric columns in a transparent way (that is like the other base data type columns), as well as a way to manage these columns in migrations.
+This is MySQL Spatial Adapter for Rails 0.1.0. It is a plugin for Rails which manages the MySql Spatial geometric columns in a transparent way (that is like the other base data type columns), as well as a way to manage these columns in migrations.
 
 ===Dependencies
 You need to install the last version of the GeoRuby gem (http://rubyforge.org/projects/georuby/).
 
 ===Operations
-Geometric columns in your ActiveRecord models now appear just like any other column of other basic data types. No new operations (for example spatial queries) are provided but they will be in a future version. New migrations operations are possible. These are :
-- add_geometry_column
-- drop_geometry_column
-- add_spatial_index
-
+Geometric columns in your ActiveRecord models now appear just like any other column of other basic data types. They can also be managed in migrations the same way as columns of basic types.
 
 ===Warning
 If you use a version of MySQL before 5.0.16, only tables using the MyISAM engine can support geometric columns. After MySQL 5.0.16, any engine (incuding INNODB) is supported. 

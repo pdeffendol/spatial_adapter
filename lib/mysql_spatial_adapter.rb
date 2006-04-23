@@ -42,8 +42,8 @@ module ActiveRecord
       #Redefines klass to add support for geometries
       def klass
         case type
-          when :geometry then GeoRuby::SimpleFeatures::Geometry
-          else original_klass
+        when :geometry then GeoRuby::SimpleFeatures::Geometry
+        else original_klass
         end
       end
 
@@ -59,11 +59,11 @@ module ActiveRecord
       
       private
       alias :original_simplified_type :simplified_type
-      #Redefines the simplified_type method to add behabiour for when a column is of type geometry
+      #Redefines the simplified_type method to add behabiour for when a column is of type geometry ; It should be enough to simplify all geometric types to :geometry. Unfortunately, if db:schema:dump is used (like for example during tests, when the database is regenerated), the dumped type for any of these geometric types will be :geometry. Maybe it is ok? It would simplify the code a little bit.
       def simplified_type(field_type)
         case field_type
-          when /geometry|point|linestring|polygon|multipoint|multilinestring|multipolygon|geometrycollection/i then :geometry
-          else original_simplified_type(field_type)
+          when /point|linestring|polygon|geometry|multipoint|multilinestring|multipolygon|geometrycollection/i then :geometry
+        else original_simplified_type(field_type)
         end
       end
 
@@ -80,39 +80,38 @@ module ActiveRecord
         end
       end
 
-      #Adds a geometry column, OGC-style. The table must use the MyISAM database engine. Authorized geometry types are :point, :line_string, :polygon, :geometry, :geometry_collection, :multi_point, :multi_line_string, :multi_polygon.
-      def add_geometry_column(table_name,column_name,geometry_type,is_not_null)
-        geometry_type = geometry_data_types[geometry_type]
-        suffix=""
-        suffix="NOT NULL" if is_not_null
-        execute "ALTER TABLE #{table_name} ADD #{column_name} #{geometry_type} #{suffix}"
+      alias :original_native_database_types :native_database_types
+      def native_database_types
+        original_native_database_types.merge!(:point => { :name => "POINT" },
+          :line_string => { :name => "LINESTRING" },
+          :polygon => { :name => "POLYGON" },
+          :geometry_collection => { :name => "GEOMETRYCOLLECTION" },
+          :multi_point => { :name => "MULTIPOINT" },
+          :multi_line_string => { :name => "MULTILINESTRING" },
+          :multi_polygon => { :name => "MULTIPOLYGON" },
+          :geometry => { :name => "GEOMETRY"})
       end
 
-      #Drops a geometry column, OGC-style.
-      def drop_geometry_column(table_name,column_name)
-        execute "ALTER TABLE #{table_name} DROP #{column_name}"
+      #if the :spatial key in the options table is true, then the sql string for a spatial index is created
+      def add_index(table_name,column_name,options = {})
+        index_name = options[:name] || "#{table_name}_#{Array(column_name).first}_index"
+        
+        if options[:spatial]
+          #one by one
+          Array(column_name).each do |col|
+            index_name = "#{table_name}_#{column_name}_index" if Array(column_name).length >0
+            execute "CREATE SPATIAL INDEX #{index_name} ON #{table_name} (#{Array(column_name).join(", ")})"
+          end
+        else
+          index_type = options[:unique] ? "UNIQUE" : ""
+          #all together
+          execute "CREATE #{index_type} INDEX #{index_name} ON #{table_name} (#{Array(column_name).join(", ")})"
+        end
       end
-
-      #Adds a spatial index to a geometric column. The column must be declared not null. Its name will be <table_name>_<column_name>_spatial_index unless the key :name is present in the options hash, in which case its value is taken as the name of the index.
-      def add_spatial_index(table_name,column_name,options = {})
-        index_name = "#{table_name}_#{column_name}_spatial_index"
-        index_name = options[:name] || index_name
-        execute "CREATE SPATIAL INDEX #{index_name} ON #{table_name} (#{column_name})"
-      end
-
-      #Translation of geometric data types
-      def geometry_data_types
-        {
-          :point => "POINT",
-          :line_string => "LINESTRING",
-          :polygon => "POLYGON",
-          :geometry_collection => "GEOMETRYCOLLECTION",
-          :multi_point => "MULTIPOINT",
-          :multi_line_string => "MULTILINESTRING",
-          :multi_polygon => "MULTIPOLYGON",
-          :geometry => "GEOMETRY"
-        }
-      end
+      
     end
   end
 end
+
+
+

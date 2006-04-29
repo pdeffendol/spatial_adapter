@@ -4,6 +4,9 @@ require 'spatial_adapter_common.rb'
 
 include GeoRuby::SimpleFeatures
 
+#tables to ignore in migration : relative to PostGIS management of geometric columns
+ActiveRecord::SchemaDumper.ignore_tables << "spatial_ref_sys" << "geometry_columns"
+
 ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
 
   include SpatialAdapter
@@ -24,7 +27,7 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
   end
 
   def create_table(name, options = {})
-    table_definition = PostgreSQLTableDefinition.new(self)
+    table_definition = ActiveRecord::ConnectionAdapters::PostgreSQLTableDefinition.new(self)
     table_definition.primary_key(options[:primary_key] || "id") unless options[:id] == false
     
     yield table_definition
@@ -64,7 +67,7 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
   alias :original_add_column :add_column
   def add_column(table_name, column_name, type, options = {})
     unless geometry_data_types[type].nil?
-      geom_column = PostgreSQLColumnDefinition.new(self, column_name, type).with_spatial_info
+      geom_column = ActiveRecord::ConnectionAdapters::PostgreSQLColumnDefinition.new(self, column_name, type).with_spatial_info
       geom_column.null = options[:null]
       geom_column.srid = options[:srid] || -1
       geom_column.with_z = options[:with_z] || false 
@@ -134,13 +137,14 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
   end
       
   def columns(table_name, name = nil) #:nodoc:
-    spatial_info = column_spatial_info(table_name)
+    raw_geom_infos = column_spatial_info(table_name)
     
     column_definitions(table_name).collect do |name, type, default, notnull|
-      if type =~ /geometry/i and spatial_info[name]
-        SpatialPostgreSQLColumn.new(name,default_value(default),raw_geom_info.type,notnull == "f",*spatial_info[name]))
+      if type =~ /geometry/i and raw_geom_infos[name]
+        raw_geom_info = raw_geom_infos[name]
+        ActiveRecord::ConnectionAdapters::SpatialPostgreSQLColumn.new(name,default_value(default),raw_geom_info.type,notnull == "f",raw_geom_info.srid,raw_geom_info.with_z,raw_geom_info.with_m)
       else
-        Column.new(name, default_value(default), translate_field_type(type),notnull == "f")
+        ActiveRecord::ConnectionAdapters::Column.new(name, default_value(default), translate_field_type(type),notnull == "f")
       end
     end
   end
@@ -154,8 +158,7 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
     WHERE conrelid = '#{table_name}'::regclass
     AND contype = 'c'
     end_sql
-
-    RawGeomInfo = Struct.new(:type,:srid,:dimension,:with_m)
+    
     raw_geom_infos = {}
     constr.each do |constr_def_a|
       constr_def = constr_def_a[0] #only 1 column in the result
@@ -167,48 +170,56 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
         else
           with_m = false
         end
-        raw_geom_info = raw_geom_infos[column_name] || RawGeomInfo.new
+        raw_geom_info = raw_geom_infos[column_name] || ActiveRecord::ConnectionAdapters::RawGeomInfo.new
         raw_geom_info.type = type
         raw_geom_info.with_m = with_m
         raw_geom_infos[column_name] = raw_geom_info
       elsif constr_def =~ /ndims\(([^)]+)\)\s*=\s*(\d+)/i
         column_name,dimension = $1,$2
-        raw_geom_info = raw_geom_infos[column_name] || RawGeomInfo.new
+        raw_geom_info = raw_geom_infos[column_name] || ActiveRecord::ConnectionAdapters::RawGeomInfo.new
         raw_geom_info.dimension = dimension.to_i
         raw_geom_infos[column_name] = raw_geom_info
       elsif constr_def =~ /srid\(([^)]+)\)\s*=\s*(-?\d+)/i
         column_name,srid = $1,$2
-        raw_geom_info = raw_geom_infos[column_name] || RawGeomInfo.new
+        raw_geom_info = raw_geom_infos[column_name] || ActiveRecord::ConnectionAdapters::RawGeomInfo.new
         raw_geom_info.srid = srid
         raw_geom_infos[column_name] = raw_geom_info
       end #if constr_def
     end #constr.each
 
-    spatial_infos = {}
-    raw_geom_infos.each_key do |column_name|
-      raw_geom_info = raw_geom_infos[column_name]
-      if raw_geom_info.dimension == 4
-        with_m= true
-        with_z=true
-      elsif raw_geom_info.dimension == 3
-        if raw_geom_info.with_m
-          with_z=false
-          with_m=true 
-        else
-          with_z=true
-          with_m=false
-        end
-      else
-        with_z = false
-        with_m = false
-      end
-      spatial_infos[column_name] = [raw_geom_info.srid,with_z,with_m]
+    raw_geom_infos.each_value do |raw_geom_info|
+      #check the presence of z and m
+      raw_geom_info.convert!
     end
 
-    spatial_infos
+    raw_geom_infos
 
   end
   
+end
+
+module ActiveRecord
+  module ConnectionAdapters
+    class RawGeomInfo < Struct.new(:type,:srid,:dimension,:with_z,:with_m)
+      def convert!
+        if dimension == 4
+          self.with_m = true
+          self.with_z = true
+        elsif dimension == 3
+          if with_m
+            self.with_z = false
+            self.with_m = true 
+          else
+            self.with_z = true
+            self.with_m = false
+          end
+        else
+          self.with_z = false
+          self.with_m = false
+        end
+      end
+    end
+  end
 end
 
 
@@ -219,7 +230,7 @@ module ActiveRecord
       
       def column(name, type, options = {})
         unless @base.geometry_data_types[type].nil?
-          geom_column = PostgreSQLColumnDefinition.new(@base,name, type).with_spatial_info
+          geom_column = PostgreSQLColumnDefinition.new(@base,name, type)
           geom_column.null = options[:null]
           geom_column.srid = options[:srid] || -1
           geom_column.with_z = options[:with_z] || false 
@@ -237,14 +248,15 @@ module ActiveRecord
       attr_accessor :srid, :with_z,:with_m
       attr_reader :spatial
 
-      def with_spatial_info(srid=-1,with_z=false,with_m=false)
+      def initialize(base = nil, name = nil, type=nil, limit=nil, default=nil,null=nil,srid=-1,with_z=false,with_m=false)
+        super(base, name, type, limit, default,null)
         @spatial=true
         @srid=srid
         @with_z=with_z
         @with_m=with_m
       end
       
-      def to_sql
+      def to_sql(table_name)
         if @spatial
           type_sql = type_to_sql(type.to_sym)
           type_sql += "M" if with_m and !with_z
@@ -255,8 +267,9 @@ module ActiveRecord
           else
             dimension = 2
           end
-          column_sql = "SELECT AddGeometryColumn('#{@base.name}','#{name}',#{srid},'#{type_sql}',#{dimension})"
-          column_sql += ";ALTER TABLE #{@base.name} ALTER #{column_name} SET NOT NULL" if null == false
+          
+          column_sql = "SELECT AddGeometryColumn('#{table_name}','#{name}',#{srid},'#{type_sql}',#{dimension})"
+          column_sql += ";ALTER TABLE #{table_name} ALTER #{name} SET NOT NULL" if null == false
           column_sql
         else
           super
@@ -283,10 +296,12 @@ module ActiveRecord
       
       #Transforms a string to a geometry. PostGIS returns a HewEWKB string.
       def self.string_to_geometry(string)
+        puts "STRING TO GEOM"
         return string unless string.is_a?(String)
         begin
-          GeoRuby::SimpleFeatures::Geometry.from_hexewkb(string)
+          GeoRuby::SimpleFeatures::Geometry.from_hex_ewkb(string)
         rescue Exception => exception
+          puts exception
           nil
         end
       end

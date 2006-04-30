@@ -182,7 +182,7 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
       elsif constr_def =~ /srid\(([^)]+)\)\s*=\s*(-?\d+)/i
         column_name,srid = $1,$2
         raw_geom_info = raw_geom_infos[column_name] || ActiveRecord::ConnectionAdapters::RawGeomInfo.new
-        raw_geom_info.srid = srid
+        raw_geom_info.srid = srid.to_i
         raw_geom_infos[column_name] = raw_geom_info
       end #if constr_def
     end #constr.each

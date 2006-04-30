@@ -45,7 +45,10 @@ ActiveRecord::SchemaDumper.class_eval do
         next if column.name == pk
         #need to use less_simplified_type  here or have each specific geometry type be simplified to a specific simplified type in Column and each one treated separately in the Column methods
         if column.is_a?(SpatialColumn)
-          tbl.print "    t.column #{column.name.inspect}, #{column.geometry_type.inspect} ,:srid => #{column.srid.inspect}, :with_z => #{column.with_z.inspect}, :with_m => #{column.with_m.inspect}"
+          tbl.print "    t.column #{column.name.inspect}, #{column.geometry_type.inspect}"
+          tbl.print ", :srid => #{column.srid.inspect}" if column.srid != -1
+          tbl.print ", :with_z => #{column.with_z.inspect}" if column.with_z
+          tbl.print ", :with_m => #{column.with_m.inspect}" if column.with_m
         else
           tbl.print "    t.column #{column.name.inspect}, #{column.type.inspect}"
         end

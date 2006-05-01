@@ -1,8 +1,8 @@
 $:.unshift(File.dirname(__FILE__))
 
 require 'test/unit'
-require 'common/common_mysql'
-require 'models/models_mysql'
+require 'common/common_postgis'
+require 'models/models_postgis'
 
 
 class FileColumTest < Test::Unit::TestCase
@@ -82,6 +82,55 @@ class FileColumTest < Test::Unit::TestCase
     assert(gc)
     assert_equal(GeometryCollection.from_geometries([Point.from_x_y(4.67,45.4),LineString.from_coordinates([[5.7,12.45],[67.55,54]])]),gc.geom)
   end
+
+  def test_3dz_points
+    pt = Table3dzPoint.new(:data => "Hello!",:geom => Point.from_x_y_z(-1.6,2.8,-3.4))
+    assert(pt.save)
+
+    pt = Table3dzPoint.find_first
+    assert(pt)
+    assert_equal(Point.from_x_y_z(-1.6,2.8,-3.4),pt.geom)
+  end
+
+  def test_3dm_points
+    pt = Table3dmPoint.new(:geom => Point.from_x_y_m(-1.6,2.8,-3.4))
+    assert(pt.save)
+
+    pt = Table3dmPoint.find_first
+    assert(pt)
+    assert_equal(Point.from_x_y_m(-1.6,2.8,-3.4),pt.geom)
+  end
   
+  def test_4d_point
+    pt = Table4dPoint.new(:geom => Point.from_x_y_z_m(-1.6,2.8,-3.4,15))
+    assert(pt.save)
+
+    pt = Table4dPoint.find_first
+    assert(pt)
+    assert_equal(Point.from_x_y_z_m(-1.6,2.8,-3.4,15),pt.geom)
+  end
+
+  def test_srid_line_string
+    ls = TableSridLineString.new(:geom => LineString.from_coordinates([[1.4,2.5],[1.5,6.7]],123))
+    assert(ls.save)
+
+    ls = TableSridLineString.find_first
+    assert(ls)
+    ls_e = LineString.from_coordinates([[1.4,2.5],[1.5,6.7]],123)
+    assert_equal(ls_e,ls.geom)
+    assert_equal(ls_e.srid,ls.geom.srid)
+  end
+
+  def test_srid_4d_polygon
+    pg = TableSrid4dPolygon.new(:geom => Polygon.from_coordinates([[[0,0,2,-45.1],[4,0,2,5],[4,4,2,4.67],[0,4,2,1.34],[0,0,2,-45.1]],[[1,1,2,12.3],[3,1,2,123],[3,3,2,12.2],[1,3,2,12],[1,1,2,12.3]]],123,true,true))
+    assert(pg.save)
+
+    pg = TableSrid4dPolygon.find_first
+    assert(pg)
+    pg_e = Polygon.from_coordinates([[[0,0,2,-45.1],[4,0,2,5],[4,4,2,4.67],[0,4,2,1.34],[0,0,2,-45.1]],[[1,1,2,12.3],[3,1,2,123],[3,3,2,12.2],[1,3,2,12],[1,1,2,12.3]]],123,true,true)
+    assert_equal(pg_e,pg.geom)
+    assert_equal(pg_e.srid,pg.geom.srid)
+  end
+
 
 end

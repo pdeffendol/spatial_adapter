@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/../common/common.rb'
+require File.dirname(__FILE__) + '/../common/common_mysql.rb'
 
 ActiveRecord::Schema.define() do
 

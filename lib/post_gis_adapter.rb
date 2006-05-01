@@ -67,12 +67,7 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
   alias :original_add_column :add_column
   def add_column(table_name, column_name, type, options = {})
     unless geometry_data_types[type].nil?
-      geom_column = ActiveRecord::ConnectionAdapters::PostgreSQLColumnDefinition.new(self, column_name, type).with_spatial_info
-      geom_column.null = options[:null]
-      geom_column.srid = options[:srid] || -1
-      geom_column.with_z = options[:with_z] || false 
-      geom_column.with_m = options[:with_m] || false
-      
+      geom_column = ActiveRecord::ConnectionAdapters::PostgreSQLColumnDefinition.new(self,column_name, type, nil,nil,options[:null],options[:srid] || -1 , options[:with_z] || false , options[:with_m] || false)
       execute geom_column.to_sql(table_name)
     else
       original_add_column(table_name,column_name,type,options)
@@ -142,6 +137,7 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
     column_definitions(table_name).collect do |name, type, default, notnull|
       if type =~ /geometry/i and raw_geom_infos[name]
         raw_geom_info = raw_geom_infos[name]
+        
         ActiveRecord::ConnectionAdapters::SpatialPostgreSQLColumn.new(name,default_value(default),raw_geom_info.type,notnull == "f",raw_geom_info.srid,raw_geom_info.with_z,raw_geom_info.with_m)
       else
         ActiveRecord::ConnectionAdapters::Column.new(name, default_value(default), translate_field_type(type),notnull == "f")
@@ -202,6 +198,8 @@ module ActiveRecord
   module ConnectionAdapters
     class RawGeomInfo < Struct.new(:type,:srid,:dimension,:with_z,:with_m)
       def convert!
+        self.type = "geometry" if self.type.nil? #if geometry the geometrytype constraint is not present : need to set the type here then
+        
         if dimension == 4
           self.with_m = true
           self.with_z = true
@@ -296,7 +294,6 @@ module ActiveRecord
       
       #Transforms a string to a geometry. PostGIS returns a HewEWKB string.
       def self.string_to_geometry(string)
-        puts "STRING TO GEOM"
         return string unless string.is_a?(String)
         begin
           GeoRuby::SimpleFeatures::Geometry.from_hex_ewkb(string)

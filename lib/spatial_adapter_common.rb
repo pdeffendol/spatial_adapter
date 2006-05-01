@@ -161,10 +161,10 @@ module SpatialColumn
   #less simlpified geometric type to be use in migrations
   def geometry_simplified_type(field_type)
     case field_type
-    when /point/i then :point
-    when /linestring/i then :line_string
-    when /polygon/i then :polygon
-    when /geometry/i then :geometry
+    when /^point$/i then :point
+    when /^linestring$/i then :line_string
+    when /^polygon$/i then :polygon
+    when /^geometry$/i then :geometry
     when /multipoint/i then :multi_point
     when /multilinestring/i then :multi_line_string
     when /multipolygon/i then :multi_polygon

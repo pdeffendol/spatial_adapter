@@ -38,7 +38,12 @@ The differences with the PostGIS version are because of the following reasons :
 - On all version of MySql, the :srid and :with_z would be ignored, since they are not supported.
 - On MySql versions <= 5.0.16, you have to add <tt>:options => "ENGINE=MyISAM"</tt> to the create_table statetement, since only MyISAM tables can have geometric columns.
 
-Here is an example of PostGIS row creation and access, using the same table defined above :
+Here is the model you would use, in both MySql and PostGIS:
+	class TablePoint < ActiveRecord::Base
+	end
+That was easy! As you see, there is no need to declare a column as geometric. The plugin will get this information by itself.
+
+Here is an example of PostGIS row creation and access, using the model and the table defined above :
 	pt = TablePoint.new(:data => "Hello!",:geom => Point.from_x_y_z(-1.6,2.8,-3.4,123))
 	pt.save
 	pt = TablePoint.find_first
@@ -50,7 +55,7 @@ For MySQL, it is slightly different since it does not support Z dimension or SRI
 	pt = TablePoint.find_first
 	puts pt.geom.x #access the geom column like any other
 
-Ruby geometric datatypes are currently made available only through the GeoRuby library (http://thepochisuperstarmegashow.com/ProjectsDoc/georuby-doc/index.html) : This is where the <tt>Point.from_x_y</tt> in the example above comes from. It is a goal of a future release of the Spatial Adapter to support additional geometric datatype libraries, such as Ruby/GEOS. 
+Ruby geometric datatypes are currently made available only through the GeoRuby library (http://thepochisuperstarmegashow.com/ProjectsDoc/georuby-doc/index.html) : This is where the <tt>Point.from_x_y</tt> in the example above comes from. It is a goal of a future release of the Spatial Adapter to support additional geometric datatype libraries, such as Ruby/GEOS, as long as they can support reading and writing of EWKB.
 
 
 

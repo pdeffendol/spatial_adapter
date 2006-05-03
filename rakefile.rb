@@ -27,7 +27,7 @@ end
 
 desc "Generate the documentation"
 Rake::RDocTask::new do |rdoc|
-  rdoc.rdoc_dir = 'doc/'
+  rdoc.rdoc_dir = 'spatialadapter-doc/'
   rdoc.title    = "MySql Spatial Adapater for Rails Documentation"
   rdoc.options << '--line-numbers' << '--inline-source'
   rdoc.rdoc_files.include('README')

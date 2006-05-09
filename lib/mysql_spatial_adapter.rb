@@ -4,6 +4,36 @@ require 'spatial_adapter_common.rb'
 
 include GeoRuby::SimpleFeatures
 
+#definition of a to_s method so the arguments in a sanitized sql string are corectly translated if they are of type Geometry
+#GeoRuby::SimpleFeatures::Geometry.class_eval do
+#  def to_s
+#    "GeomFromWKB(0x#{as_hex_wkb},#{srid})"
+#  end
+#end
+
+ActiveRecord::Base.class_eval do
+  #Redefinition of the method to do something special when a geometric column is encountered
+  def self.construct_conditions_from_arguments(attribute_names, arguments)
+    conditions = []
+    attribute_names.each_with_index do |name, idx| 
+      if @columns_hash[name].is_a?(SpatialColumn)
+        #when the discriminating column is spatial, always use the MBRIntersects (bounding box intersection check) operator : the user can pass either a geometric object (which will be transformed to a string using the quote method of the database adapter) or directly a string which will be interpreted by the database directly
+        if arguments[idx].is_a?(Array)
+          conditions << "MBRIntersects(?, #{table_name}.#{connection.quote_column_name(name)}) "
+          #using some georuby utility : The multipoint has a bbox whose corners are the 2 points passed as parameters : [ pt1, pt2]
+          arguments[idx]= MultiPoint.from_coordinates(arguments[idx])
+        else
+          conditions << "MBRIntersects(?, #{table_name}.#{connection.quote_column_name(name)}) " 
+        end
+      else
+        conditions << "#{table_name}.#{connection.quote_column_name(name)} #{attribute_condition(arguments[idx])} " 
+      end
+    end
+    [ conditions.join(" AND "), *arguments[0...attribute_names.length] ]
+  end
+end
+
+
 ActiveRecord::ConnectionAdapters::MysqlAdapter.class_eval do
   
   include SpatialAdapter
@@ -14,7 +44,7 @@ ActiveRecord::ConnectionAdapters::MysqlAdapter.class_eval do
   end
  
   alias :original_quote :quote
-  #Redefines the quote method to add behaviour for when a Geometry is encountered
+  #Redefines the quote method to add behaviour for when a Geometry is encountered ; used when binding variables in find_by methods
   def quote(value, column = nil)
     if value.kind_of?(GeoRuby::SimpleFeatures::Geometry)
       "GeomFromWKB(0x#{value.as_hex_wkb},#{value.srid})"

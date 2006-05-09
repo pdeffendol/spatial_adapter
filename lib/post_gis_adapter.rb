@@ -7,6 +7,28 @@ include GeoRuby::SimpleFeatures
 #tables to ignore in migration : relative to PostGIS management of geometric columns
 ActiveRecord::SchemaDumper.ignore_tables << "spatial_ref_sys" << "geometry_columns"
 
+ActiveRecord::Base.class_eval do
+  def self.construct_conditions_from_arguments(attribute_names, arguments)
+    conditions = []
+    attribute_names.each_with_index do |name, idx| 
+      if @columns_hash[name].is_a?(SpatialColumn)
+        #when the discriminating column is spatial, always use the MBRIntersects (bounding box intersection check) operator : the user can pass either a geometric object (which will be transformed to a string using the quote method of the database adapter) or directly a string which will be interpreted by the database directly
+        if arguments[idx].is_a?(Array)
+          bbox = arguments[idx]
+          conditions << "#{table_name}.#{connection.quote_column_name(name)} && SetSRID(?::box3d, #{bbox[2] || -1} ) " 
+          #Could do without the ? and replace directly with the quoted BBOX3D but like this, the flow is the same everytime
+          arguments[idx]= "BOX3D(" + bbox[0].join(" ") + "," + bbox[1].join(" ") + ")"
+        else
+          conditions << "#{table_name}.#{connection.quote_column_name(name)} && ? " 
+        end
+      else
+        conditions << "#{table_name}.#{connection.quote_column_name(name)} #{attribute_condition(arguments[idx])} " 
+      end
+    end
+    [ conditions.join(" AND "), *arguments[0...attribute_names.length] ]
+  end
+end
+
 ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
 
   include SpatialAdapter

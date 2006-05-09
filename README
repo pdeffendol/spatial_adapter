@@ -15,6 +15,8 @@ You need to have SVN installed.
 ===Operations
 Geometric columns in your ActiveRecord models now appear just like any other column of other basic data types. They can also be dumped in ruby schema mode and loaded in migrations the same way as columns of basic types.
 
+==== Migrations
+
 Here is an example of code for the creation of a table with a geometric column in PostGIS, along with the addition of a spatial index on the column : 
 	ActiveRecord::Schema.define do
 	  create_table "table_points", :force => true do |t|
@@ -38,10 +40,14 @@ The differences with the PostGIS version are because of the following reasons :
 - On all version of MySql, the :srid and :with_z would be ignored, since they are not supported.
 - On MySql versions <= 5.0.16, you have to add <tt>:options => "ENGINE=MyISAM"</tt> to the create_table statetement, since only MyISAM tables can have geometric columns.
 
+==== Model
+
 Here is the model you would use, in both MySql and PostGIS:
 	class TablePoint < ActiveRecord::Base
 	end
 That was easy! As you see, there is no need to declare a column as geometric. The plugin will get this information by itself.
+
+==== Access
 
 Here is an example of PostGIS row creation and access, using the model and the table defined above :
 	pt = TablePoint.new(:data => "Hello!",:geom => Point.from_x_y_z(-1.6,2.8,-3.4,123))
@@ -55,8 +61,18 @@ For MySQL, it is slightly different since it does not support Z dimension or SRI
 	pt = TablePoint.find_first
 	puts pt.geom.x #access the geom column like any other
 
-Ruby geometric datatypes are currently made available only through the GeoRuby library (http://thepochisuperstarmegashow.com/ProjectsDoc/georuby-doc/index.html) : This is where the <tt>Point.from_x_y</tt> in the example above comes from. It is a goal of a future release of the Spatial Adapter to support additional geometric datatype libraries, such as Ruby/GEOS, as long as they can support reading and writing of EWKB.
+==== Find_by
 
+find_by_[column] has been redefined when column is of a geometric type. Instead of using the Rails default '=' operator, for which I can't see a definition for MySql spatial datatypes and which performs a bounding box equality test in PostGIS, it uses a bounding box intersection: && in PostGIS and MBRIntersects in MySQL, which can both make use of a spatial index if one is present to speed up the queries. You could use this query, for example, if you need to display data from the database: You would want only the geometries which are in the screen rectangle and you could use a bounding box query for that. Since this is a common case, it is the default. You have 2 ways to use the find_by_[geom_column]: Either by passing a geometric object directly, or passing an array with the 2 opposite corners of a bounding box (with 2 or 3 coordinates depending of the dimension of the data).
+	Park.find_by_geom(LineString.from_coordinates([[1.4,5.6],[2.7,8.9],[1.6,5.6]]))
+or
+	Park.find_by_geom([[3,5.6],[19.98,5.9]])
+In PostGIS, since you can only use operations with geometries with the same SRID, you can add a third element representing the SRID of the bounding box to the array. It is by default set to -1:
+	Park.find_by_geom([[3,5.6],[19.98,5.9],123])
+
+==== Geometric data types
+
+Ruby geometric datatypes are currently made available only through the GeoRuby library (http://thepochisuperstarmegashow.com/ProjectsDoc/georuby-doc/index.html) : This is where the <tt>Point.from_x_y</tt> in the example above comes from. It is a goal of a future release of the Spatial Adapter to support additional geometric datatype libraries, such as Ruby/GEOS, as long as they can support reading and writing of EWKB.
 
 
 ===Warning

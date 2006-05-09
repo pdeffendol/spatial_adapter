@@ -87,9 +87,8 @@ ActiveRecord::SchemaDumper.class_eval do
   end
 end
 
-module SpatialAdapter
-  
 
+module SpatialAdapter
   #Translation of geometric data types
   def geometry_data_types
     {

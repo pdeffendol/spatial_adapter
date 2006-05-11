@@ -61,6 +61,14 @@ For MySQL, it is slightly different since it does not support Z dimension or SRI
 	pt = TablePoint.find_first
 	puts pt.geom.x #access the geom column like any other
 
+==== Fixtures
+
+If you use fixtures for your unit tests, at some point, you will want to input a geometry. You could transform your geometries to a form suitable for YAML yourself everytime but the spatial adapter provides a method to do it for you: +to_yaml+. It works for both MySQL and PostGIS (although the string returned is different for each database). You would use it like this, if the geometric column is a point:
+	fixture:
+	 id: 1
+	 data: HELLO
+	 geom: <%= Point.from_x_y(123.5,321.9).to_yaml %>
+
 ==== Find_by
 
 find_by_[column] has been redefined when column is of a geometric type. Instead of using the Rails default '=' operator, for which I can't see a definition for MySql spatial datatypes and which performs a bounding box equality test in PostGIS, it uses a bounding box intersection: && in PostGIS and MBRIntersects in MySQL, which can both make use of a spatial index if one is present to speed up the queries. You could use this query, for example, if you need to display data from the database: You would want only the geometries which are in the screen rectangle and you could use a bounding box query for that. Since this is a common case, it is the default. You have 2 ways to use the find_by_[geom_column]: Either by passing a geometric object directly, or passing an array with the 2 opposite corners of a bounding box (with 2 or 3 coordinates depending of the dimension of the data).
@@ -72,7 +80,7 @@ In PostGIS, since you can only use operations with geometries with the same SRID
 
 ==== Geometric data types
 
-Ruby geometric datatypes are currently made available only through the GeoRuby library (http://thepochisuperstarmegashow.com/ProjectsDoc/georuby-doc/index.html) : This is where the <tt>Point.from_x_y</tt> in the example above comes from. It is a goal of a future release of the Spatial Adapter to support additional geometric datatype libraries, such as Ruby/GEOS, as long as they can support reading and writing of EWKB.
+Ruby geometric datatypes are currently made available only through the GeoRuby library (http://thepochisuperstarmegashow.com/ProjectsDoc/georuby-doc/index.html): This is where the <tt>Point.from_x_y</tt> in the example above comes from. It is a goal of a future release of the Spatial Adapter to support additional geometric datatype libraries, such as Ruby/GEOS, as long as they can support reading and writing of EWKB.
 
 
 ===Warning

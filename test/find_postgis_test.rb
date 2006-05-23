@@ -6,7 +6,7 @@ require 'common/common_postgis'
 class Park < ActiveRecord::Base
 end
 
-class FileColumTest < Test::Unit::TestCase
+class FindPostgisTest < Test::Unit::TestCase
 
   def setup
     ActiveRecord::Schema.define() do

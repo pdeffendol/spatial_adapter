@@ -1,6 +1,9 @@
 class TablePoint < ActiveRecord::Base
 end
 
+class TableKeywordColumnPoint < ActiveRecord::Base
+end
+
 class TableLineString < ActiveRecord::Base
 end
 

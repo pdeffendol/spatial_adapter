@@ -6,7 +6,7 @@ require 'common/common_mysql'
 class Park < ActiveRecord::Base
 end
 
-class FileColumTest < Test::Unit::TestCase
+class FindMysqlTest < Test::Unit::TestCase
    
   def setup
     ActiveRecord::Schema.define() do

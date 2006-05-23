@@ -7,7 +7,7 @@ class Park < ActiveRecord::Base
 end
 
 
-class FileColumTest < Test::Unit::TestCase
+class MigrationPostgisTest < Test::Unit::TestCase
   
   def test_creation_modification
     #creation
@@ -94,6 +94,33 @@ class FileColumTest < Test::Unit::TestCase
     
   end
 
+  def test_keyword_column_name
+    ActiveRecord::Schema.define do
+      create_table "parks", :force => true do |t|
+        t.column "data" , :string, :limit => 100
+        t.column "value", :integer
+        #location is a postgreSQL keyword and is surrounded by double-quotes ("") when appearing in constraint descriptions ; tests a bug corrected in version 39
+        t.column "location", :point,:null=>false,:srid => 0, :with_m => true, :with_z => true
+      end
+    end
+
+    connection = ActiveRecord::Base.connection
+    columns = connection.columns("parks")
+
+    assert_equal(4,columns.length) # the 3 defined + id
+    columns.each do |col|
+      if col.name == "location"
+        assert(col.is_a?(SpatialColumn))
+        assert(:point,col.geometry_type)
+        assert(:geometry,col.type)
+        assert(col.null == false)
+        assert(0,col.srid)
+        assert(col.with_z)
+        assert(col.with_m)
+      end
+    end
+  end
+
   
   def test_dump
     #Force the creation of a table
@@ -101,7 +128,7 @@ class FileColumTest < Test::Unit::TestCase
       create_table "parks", :force => true do |t|
         t.column "data" , :string, :limit => 100
         t.column "value", :integer
-        t.column "geom", :multi_polygon,:null=>false,:srid => 555, :with_m => true, :with_z => true
+        t.column "geom", :multi_polygon,:null=>false,:srid => 0, :with_m => true, :with_z => true
       end
       
       add_index "parks","geom",:spatial=>true,:name => "example_spatial_index"
@@ -129,7 +156,7 @@ class FileColumTest < Test::Unit::TestCase
         assert(:multi_polygon,col.geometry_type)
         assert(:geometry,col.type)
         assert(col.null == false)
-        assert(555,col.srid)
+        assert(0,col.srid)
         assert(col.with_z)
         assert(col.with_m)
       end
@@ -139,6 +166,5 @@ class FileColumTest < Test::Unit::TestCase
     assert(connection.indexes("parks")[0].spatial)
     assert_equal("example_spatial_index",connection.indexes("parks")[0].name)
    end
-
   
 end

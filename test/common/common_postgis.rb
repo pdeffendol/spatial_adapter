@@ -1,6 +1,8 @@
 $:.unshift(File.dirname(__FILE__) + '/../../lib')
 
-require 'active_record'
+require 'rubygems'
+require_gem 'activerecord'
+
 
 ActiveRecord::Base.establish_connection(YAML.load_file(File.dirname(__FILE__) + '/../db/database_postgis.yml'))
 

@@ -1,6 +1,6 @@
 require 'active_record'
 require 'geo_ruby'
-require 'spatial_adapter_common.rb'
+require 'spatial_adapter_common'
 
 include GeoRuby::SimpleFeatures
 
@@ -189,7 +189,7 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
     raw_geom_infos = {}
     constr.each do |constr_def_a|
       constr_def = constr_def_a[0] #only 1 column in the result
-      if constr_def =~ /geometrytype\(([^)]+)\)\s*=\s*'([^']+)'/i
+      if constr_def =~ /geometrytype\(["']?([^"')]+)["']?\)\s*=\s*'([^']+)'/i
         column_name,type = $1,$2
         if type[-1] == ?M
           with_m = true
@@ -201,12 +201,12 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
         raw_geom_info.type = type
         raw_geom_info.with_m = with_m
         raw_geom_infos[column_name] = raw_geom_info
-      elsif constr_def =~ /ndims\(([^)]+)\)\s*=\s*(\d+)/i
+      elsif constr_def =~ /ndims\(["']?([^"')]+)["']?\)\s*=\s*(\d+)/i
         column_name,dimension = $1,$2
         raw_geom_info = raw_geom_infos[column_name] || ActiveRecord::ConnectionAdapters::RawGeomInfo.new
         raw_geom_info.dimension = dimension.to_i
         raw_geom_infos[column_name] = raw_geom_info
-      elsif constr_def =~ /srid\(([^)]+)\)\s*=\s*(-?\d+)/i
+      elsif constr_def =~ /srid\(["']?([^"')]+)["']?\)\s*=\s*(-?\d+)/i
         column_name,srid = $1,$2
         raw_geom_info = raw_geom_infos[column_name] || ActiveRecord::ConnectionAdapters::RawGeomInfo.new
         raw_geom_info.srid = srid.to_i
@@ -227,7 +227,7 @@ end
 
 module ActiveRecord
   module ConnectionAdapters
-    class RawGeomInfo < Struct.new(:type,:srid,:dimension,:with_z,:with_m)
+    class RawGeomInfo < Struct.new(:type,:srid,:dimension,:with_z,:with_m) #:nodoc:
       def convert!
         self.type = "geometry" if self.type.nil? #if geometry the geometrytype constraint is not present : need to set the type here then
         
@@ -326,12 +326,7 @@ module ActiveRecord
       #Transforms a string to a geometry. PostGIS returns a HewEWKB string.
       def self.string_to_geometry(string)
         return string unless string.is_a?(String)
-        begin
-          GeoRuby::SimpleFeatures::Geometry.from_hex_ewkb(string)
-        rescue Exception => exception
-          puts exception
-          nil
-        end
+        GeoRuby::SimpleFeatures::Geometry.from_hex_ewkb(string) rescue nil
       end
     end
   end

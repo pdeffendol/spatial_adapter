@@ -5,7 +5,7 @@ require 'common/common_postgis'
 require 'models/models_postgis'
 
 
-class FileColumTest < Test::Unit::TestCase
+class AccessPostgisTest < Test::Unit::TestCase
    
   def test_point
     pt = TablePoint.new(:data => "Test", :geom => Point.from_x_y(1.2,4.5))
@@ -16,6 +16,21 @@ class FileColumTest < Test::Unit::TestCase
     assert_equal("Test",pt.data)
     assert_equal(Point.from_x_y(1.2,4.5),pt.geom)
     
+    pts = TablePoint.find_all
+    pts.each do |pt|
+      assert(pt.geom.is_a?(Point))
+    end
+
+  end
+
+  def test_keyword_column_point
+    pt = TableKeywordColumnPoint.new(:location => Point.from_x_y(1.2,4.5))
+    assert(pt.save)
+    
+    pt = TableKeywordColumnPoint.find_first
+    assert(pt)
+    assert_equal(Point.from_x_y(1.2,4.5),pt.location)
+
   end
 
   def test_line_string

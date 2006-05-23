@@ -102,9 +102,10 @@ Ruby geometric datatypes are currently made available only through the GeoRuby l
 - Geometric columns can now be dumped just like other base data types. This means you can use the ruby schema mode, even if you use the plugin.
 - Support of M dimensions in migrations. The <tt>:dimension</tt> key in the column definition has disappeared and has been replaced by <tt>:with_z</tt> and <tt>:with_m</tt>.
 - Addition of unit tests. At the plugin root, Run <tt>rake test:mysql</tt> to run the mysql tests and <tt>rake test:postgis</tt> for the postgis ones. You will need to configure your connection in <tt>test/db/database_mysql.yml</tt> and <tt>test/db/database_postgis.yml</tt>. If you get errors on your platform, please report to mailto:guilhem.vellut+georuby@gmail.com.
+- Addition of a find_by methods with a special behaviour for geometries
+- Addition of a to_yaml method to use inside a YAML fixture
 
 ===TODO
-- Automatic generation of spatial queries for the geometric columns (in the spirit of the Rails find_by_... methods)
 - Support of other geometric datatype libraries in addition to GeoRuby
 - Tutorials
 

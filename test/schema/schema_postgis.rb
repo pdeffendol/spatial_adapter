@@ -8,6 +8,10 @@ ActiveRecord::Schema.define() do
     t.column "geom", :point, :null=>false
   end
 
+  create_table "table_keyword_column_points", :force => true do |t|
+    t.column "location", :point, :null => false
+  end
+
   create_table "table_line_strings", :force => true do |t|
     t.column "value", :integer
     t.column "geom", :line_string, :null=>false

@@ -7,7 +7,7 @@ class Park < ActiveRecord::Base
 end
 
 
-class FileColumTest < Test::Unit::TestCase
+class MigrationMysqlTest < Test::Unit::TestCase
   
   def test_creation_modification
     #creation

@@ -5,7 +5,7 @@ require 'common/common_mysql'
 require 'models/models_mysql'
 
 
-class FileColumTest < Test::Unit::TestCase
+class AccessMysqlTest < Test::Unit::TestCase
    
   def test_point
     pt = TablePoint.new(:data => "Test", :geom => Point.from_x_y(1.2,4.5))

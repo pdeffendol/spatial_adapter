@@ -1,13 +1,13 @@
 require 'active_record'
 require 'geo_ruby'
-require 'spatial_adapter_common.rb'
+require 'common_spatial_adapter'
 
 include GeoRuby::SimpleFeatures
 
 
 #add a method to_yaml to the Geometry class which will transform a geometry in a form suitable to be used in a YAML file (such as in a fixture)
 GeoRuby::SimpleFeatures::Geometry.class_eval do
-  def to_yaml
+  def to_fixture_format
     "!binary | #{[(255.chr * 4) + as_wkb].pack('m')}"
   end
 end

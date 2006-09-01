@@ -29,7 +29,7 @@ Here is an example of code for the creation of a table with a geometric column i
 
 Here is a related statement valid for MySql version <= 5.0.16 :
 	ActiveRecord::Schema.define do
-	  create_table "table_points", ;options=>"ENGINE=MyISAM", :force => true do |t|
+	  create_table "table_points", :options=>"ENGINE=MyISAM", :force => true do |t|
     	    t.column "data", :string
     	    t.column "geom", :point, :null=>false
   	  end

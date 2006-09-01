@@ -8,7 +8,7 @@ include GeoRuby::SimpleFeatures
 ActiveRecord::SchemaDumper.ignore_tables << "spatial_ref_sys" << "geometry_columns"
 
 
-#add a method to_yaml to the Geometry class which will transform a geometry in a form suitable to be used in a YAML file (such as in a fixture)
+#add a method to_fixture_format to the Geometry class which will transform a geometry in a form suitable to be used in a YAML file (such as in a fixture)
 GeoRuby::SimpleFeatures::Geometry.class_eval do
   def to_fixture_format
     as_hex_ewkb

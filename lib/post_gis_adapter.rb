@@ -8,7 +8,7 @@ include GeoRuby::SimpleFeatures
 ActiveRecord::SchemaDumper.ignore_tables << "spatial_ref_sys" << "geometry_columns"
 
 
-#add a method to_fixture_format to the Geometry class which will transform a geometry in a form suitable to be used in a YAML file (such as in a fixture)
+#add a method to_yaml to the Geometry class which will transform a geometry in a form suitable to be used in a YAML file (such as in a fixture)
 GeoRuby::SimpleFeatures::Geometry.class_eval do
   def to_fixture_format
     as_hex_ewkb
@@ -17,6 +17,7 @@ end
 
 
 ActiveRecord::Base.class_eval do
+  #For Rails < 1.2
   def self.construct_conditions_from_arguments(attribute_names, arguments)
     conditions = []
     attribute_names.each_with_index do |name, idx| 
@@ -24,7 +25,7 @@ ActiveRecord::Base.class_eval do
         #when the discriminating column is spatial, always use the && (bounding box intersection check) operator : the user can pass either a geometric object (which will be transformed to a string using the quote method of the database adapter) or an array representing 2 opposite corners of a bounding box
         if arguments[idx].is_a?(Array)
           bbox = arguments[idx]
-          conditions << "#{table_name}.#{connection.quote_column_name(name)} && SetSRID(?::box3d, #{bbox[2] || -1} ) " 
+          conditions << "#{table_name}.#{connection.quote_column_name(name)} && SetSRID(?::box3d, #{bbox[2] || DEFAULT_SRID} ) " 
           #Could do without the ? and replace directly with the quoted BBOX3D but like this, the flow is the same everytime
           arguments[idx]= "BOX3D(" + bbox[0].join(" ") + "," + bbox[1].join(" ") + ")"
         else
@@ -36,6 +37,28 @@ ActiveRecord::Base.class_eval do
     end
     [ conditions.join(" AND "), *arguments[0...attribute_names.length] ]
   end
+
+  #For Rails >= 1.2
+  def self.sanitize_sql_hash(attrs)
+    conditions = attrs.map do |attr, value|
+      if columns_hash[attr].is_a?(SpatialColumn)
+         if value.is_a?(Array)
+           attrs[attr]= "BOX3D(" + value[0].join(" ") + "," + value[1].join(" ") + ")"
+           "#{table_name}.#{connection.quote_column_name(attr)} && SetSRID(?::box3d, #{value[2] || DEFAULT_SRID} ) " 
+         elsif value.is_a?(Envelope)
+           attrs[attr]= "BOX3D(" + value.lower_corner.text_representation + "," + value.upper_corner.text_representation + ")"
+           "#{table_name}.#{connection.quote_column_name(attr)} && SetSRID(?::box3d, #{value.srid} ) " 
+         else
+          "#{table_name}.#{connection.quote_column_name(attr)} && ? " 
+         end
+      else
+        "#{table_name}.#{connection.quote_column_name(attr)} #{attribute_condition(value)}"
+      end
+    end.join(' AND ')
+    
+    replace_bind_variables(conditions, expand_range_bind_variables(attrs.values))
+  end
+
 end
 
 ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
@@ -84,7 +107,7 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
   alias :original_remove_column :remove_column
   def remove_column(table_name,column_name)
     columns(table_name).each do |col|
-      if col.name.to_s == column_name.to_s
+      if col.name == column_name 
         #check if the column is geometric
         unless geometry_data_types[col.type].nil?
           execute "SELECT DropGeometryColumn('#{table_name}','#{column_name}')"

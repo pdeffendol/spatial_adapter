@@ -29,7 +29,7 @@ Here is an example of code for the creation of a table with a geometric column i
 
 Here is a related statement valid for MySql version <= 5.0.16 :
 	ActiveRecord::Schema.define do
-	  create_table "table_points", :options=>"ENGINE=MyISAM", :force => true do |t|
+	  create_table "table_points", ;options=>"ENGINE=MyISAM", :force => true do |t|
     	    t.column "data", :string
     	    t.column "geom", :point, :null=>false
   	  end
@@ -63,11 +63,11 @@ For MySQL, it is slightly different since it does not support Z dimension or SRI
 
 ==== Fixtures
 
-If you use fixtures for your unit tests, at some point, you will want to input a geometry. You could transform your geometries to a form suitable for YAML yourself everytime but the spatial adapter provides a method to do it for you: +to_fixture_format+. It works for both MySQL and PostGIS (although the string returned is different for each database). You would use it like this, if the geometric column is a point:
+If you use fixtures for your unit tests, at some point, you will want to input a geometry. You could transform your geometries to a form suitable for YAML yourself everytime but the spatial adapter provides a method to do it for you: +to_yaml+. It works for both MySQL and PostGIS (although the string returned is different for each database). You would use it like this, if the geometric column is a point:
 	fixture:
 	 id: 1
 	 data: HELLO
-	 geom: <%= Point.from_x_y(123.5,321.9).to_fixture_format %>
+	 geom: <%= Point.from_x_y(123.5,321.9).to_yaml %>
 
 ==== Find_by
 
@@ -103,7 +103,7 @@ Ruby geometric datatypes are currently made available only through the GeoRuby l
 - Support of M dimensions in migrations. The <tt>:dimension</tt> key in the column definition has disappeared and has been replaced by <tt>:with_z</tt> and <tt>:with_m</tt>.
 - Addition of unit tests. At the plugin root, Run <tt>rake test:mysql</tt> to run the mysql tests and <tt>rake test:postgis</tt> for the postgis ones. You will need to configure your connection in <tt>test/db/database_mysql.yml</tt> and <tt>test/db/database_postgis.yml</tt>. If you get errors on your platform, please report to mailto:guilhem.vellut+georuby@gmail.com.
 - Addition of a find_by methods with a special behaviour for geometries
-- Addition of a to_fixture_format method to use inside a YAML fixture
+- Addition of a to_yaml method to use inside a YAML fixture
 
 ===TODO
 - Support of other geometric datatype libraries in addition to GeoRuby

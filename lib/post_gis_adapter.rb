@@ -17,48 +17,59 @@ end
 
 
 ActiveRecord::Base.class_eval do
-  #For Rails < 1.2
-  def self.construct_conditions_from_arguments(attribute_names, arguments)
-    conditions = []
-    attribute_names.each_with_index do |name, idx| 
-      if columns_hash[name].is_a?(SpatialColumn)
-        #when the discriminating column is spatial, always use the && (bounding box intersection check) operator : the user can pass either a geometric object (which will be transformed to a string using the quote method of the database adapter) or an array representing 2 opposite corners of a bounding box
-        if arguments[idx].is_a?(Array)
-          bbox = arguments[idx]
-          conditions << "#{table_name}.#{connection.quote_column_name(name)} && SetSRID(?::box3d, #{bbox[2] || DEFAULT_SRID} ) " 
-          #Could do without the ? and replace directly with the quoted BBOX3D but like this, the flow is the same everytime
-          arguments[idx]= "BOX3D(" + bbox[0].join(" ") + "," + bbox[1].join(" ") + ")"
-        else
-          conditions << "#{table_name}.#{connection.quote_column_name(name)} && ? " 
-        end
-      else
-        conditions << "#{table_name}.#{connection.quote_column_name(name)} #{attribute_condition(arguments[idx])} " 
-      end
-    end
-    [ conditions.join(" AND "), *arguments[0...attribute_names.length] ]
-  end
+  require 'active_record/version'
 
-  #For Rails >= 1.2
-  def self.sanitize_sql_hash(attrs)
-    conditions = attrs.map do |attr, value|
+  #For Rails < 1.2
+  if ActiveRecord::VERSION::STRING < "1.15.1"
+    def self.construct_conditions_from_arguments(attribute_names, arguments)
+      conditions = []
+      attribute_names.each_with_index do |name, idx| 
+        if columns_hash[name].is_a?(SpatialColumn)
+          #when the discriminating column is spatial, always use the && (bounding box intersection check) operator : the user can pass either a geometric object (which will be transformed to a string using the quote method of the database adapter) or an array representing 2 opposite corners of a bounding box
+          if arguments[idx].is_a?(Array)
+            bbox = arguments[idx]
+            conditions << "#{table_name}.#{connection.quote_column_name(name)} && SetSRID(?::box3d, #{bbox[2] || DEFAULT_SRID} ) " 
+            #Could do without the ? and replace directly with the quoted BBOX3D but like this, the flow is the same everytime
+            arguments[idx]= "BOX3D(" + bbox[0].join(" ") + "," + bbox[1].join(" ") + ")"
+          else
+            conditions << "#{table_name}.#{connection.quote_column_name(name)} && ? " 
+          end
+        else
+          conditions << "#{table_name}.#{connection.quote_column_name(name)} #{attribute_condition(arguments[idx])} " 
+        end
+      end
+      [ conditions.join(" AND "), *arguments[0...attribute_names.length] ]
+    end
+  else
+    def self.get_conditions(attrs)
+      attrs.map do |attr, value|
       if columns_hash[attr].is_a?(SpatialColumn)
-         if value.is_a?(Array)
-           attrs[attr]= "BOX3D(" + value[0].join(" ") + "," + value[1].join(" ") + ")"
-           "#{table_name}.#{connection.quote_column_name(attr)} && SetSRID(?::box3d, #{value[2] || DEFAULT_SRID} ) " 
-         elsif value.is_a?(Envelope)
-           attrs[attr]= "BOX3D(" + value.lower_corner.text_representation + "," + value.upper_corner.text_representation + ")"
-           "#{table_name}.#{connection.quote_column_name(attr)} && SetSRID(?::box3d, #{value.srid} ) " 
-         else
+        if value.is_a?(Array)
+          attrs[attr]= "BOX3D(" + value[0].join(" ") + "," + value[1].join(" ") + ")"
+          "#{table_name}.#{connection.quote_column_name(attr)} && SetSRID(?::box3d, #{value[2] || DEFAULT_SRID} ) " 
+        elsif value.is_a?(Envelope)
+          attrs[attr]= "BOX3D(" + value.lower_corner.text_representation + "," + value.upper_corner.text_representation + ")"
+          "#{table_name}.#{connection.quote_column_name(attr)} && SetSRID(?::box3d, #{value.srid} ) " 
+        else
           "#{table_name}.#{connection.quote_column_name(attr)} && ? " 
-         end
+        end
       else
         "#{table_name}.#{connection.quote_column_name(attr)} #{attribute_condition(value)}"
       end
-    end.join(' AND ')
-    
-    replace_bind_variables(conditions, expand_range_bind_variables(attrs.values))
+      end.join(' AND ')
+    end
+    if ActiveRecord::VERSION::STRING == "1.15.1"
+      def self.sanitize_sql_hash(attrs)
+        conditions = get_conditions(attrs)
+        replace_bind_variables(conditions, attrs.values)
+      end
+    else
+      def self.sanitize_sql_hash(attrs)
+        conditions = get_conditions(attrs)
+        replace_bind_variables(conditions, expand_range_bind_variables(attrs.values))
+      end
+    end
   end
-
 end
 
 ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do

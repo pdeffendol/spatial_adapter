@@ -4,7 +4,6 @@ require 'common_spatial_adapter'
 
 include GeoRuby::SimpleFeatures
 
-
 #add a method to_yaml to the Geometry class which will transform a geometry in a form suitable to be used in a YAML file (such as in a fixture)
 GeoRuby::SimpleFeatures::Geometry.class_eval do
   def to_fixture_format
@@ -12,48 +11,59 @@ GeoRuby::SimpleFeatures::Geometry.class_eval do
   end
 end
 
-
 ActiveRecord::Base.class_eval do
-  #Redefinition of the method to do something special when a geometric column is encountered
-  
+  require 'active_record/version'
+
   #For Rails < 1.2
-  def self.construct_conditions_from_arguments(attribute_names, arguments)
-    conditions = []
-    attribute_names.each_with_index do |name, idx| 
-      if columns_hash[name].is_a?(SpatialColumn)
-        #when the discriminating column is spatial, always use the MBRIntersects (bounding box intersection check) operator : the user can pass either a geometric object (which will be transformed to a string using the quote method of the database adapter) or an array with the corner points of a bounding box
-        if arguments[idx].is_a?(Array)
-          #using some georuby utility : The multipoint has a bbox whose corners are the 2 points passed as parameters : [ pt1, pt2]
-          arguments[idx]= MultiPoint.from_coordinates(arguments[idx])
-        elsif arguments[idx].is_a?(Envelope)
-          arguments[idx]= MultiPoint.from_points([arguments[idx].lower_corner,arguments[idx].upper_corner])
+  if ActiveRecord::VERSION::STRING < "1.15.1"
+    def self.construct_conditions_from_arguments(attribute_names, arguments)
+      conditions = []
+      attribute_names.each_with_index do |name, idx| 
+        if columns_hash[name].is_a?(SpatialColumn)
+          #when the discriminating column is spatial, always use the MBRIntersects (bounding box intersection check) operator : the user can pass either a geometric object (which will be transformed to a string using the quote method of the database adapter) or an array with the corner points of a bounding box
+          if arguments[idx].is_a?(Array)
+            #using some georuby utility : The multipoint has a bbox whose corners are the 2 points passed as parameters : [ pt1, pt2]
+            arguments[idx]= MultiPoint.from_coordinates(arguments[idx])
+          elsif arguments[idx].is_a?(Envelope)
+            arguments[idx]= MultiPoint.from_points([arguments[idx].lower_corner,arguments[idx].upper_corner])
+          end
+          conditions << "MBRIntersects(?, #{table_name}.#{connection.quote_column_name(name)}) " 
+        else
+          conditions << "#{table_name}.#{connection.quote_column_name(name)} #{attribute_condition(arguments[idx])} " 
         end
-        conditions << "MBRIntersects(?, #{table_name}.#{connection.quote_column_name(name)}) " 
-      else
-        conditions << "#{table_name}.#{connection.quote_column_name(name)} #{attribute_condition(arguments[idx])} " 
+      end
+      [ conditions.join(" AND "), *arguments[0...attribute_names.length] ]
+    end
+
+  else
+    def self.get_conditions(attrs)
+      attrs.map do |attr, value|
+        if columns_hash[attr].is_a?(SpatialColumn)
+          if value.is_a?(Array)
+            #using some georuby utility : The multipoint has a bbox whose corners are the 2 points passed as parameters : [ pt1, pt2]
+            attrs[attr]= MultiPoint.from_coordinates(value)
+          elsif value.is_a?(Envelope)
+            attrs[attr]= MultiPoint.from_points([value.lower_corner,value.upper_corner])
+          end
+          "MBRIntersects(?, #{table_name}.#{connection.quote_column_name(attr)}) " 
+        else
+          #original stuff
+          "#{table_name}.#{connection.quote_column_name(attr)} #{attribute_condition(value)}"
+        end
+      end.join(' AND ')
+    end
+    if ActiveRecord::VERSION::STRING == "1.15.1"
+      def self.sanitize_sql_hash(attrs)
+        conditions = get_conditions(attrs)
+        replace_bind_variables(conditions, attrs.values)
+      end
+    else
+      #For Rails >= 1.2
+      def self.sanitize_sql_hash(attrs)
+        conditions = get_conditions(attrs)
+        replace_bind_variables(conditions, expand_range_bind_variables(attrs.values))
       end
     end
-    [ conditions.join(" AND "), *arguments[0...attribute_names.length] ]
-  end
-
-  #For Rails >= 1.2
-  def self.sanitize_sql_hash(attrs)
-     conditions = attrs.map do |attr, value|
-      if columns_hash[attr].is_a?(SpatialColumn)
-         if value.is_a?(Array)
-          #using some georuby utility : The multipoint has a bbox whose corners are the 2 points passed as parameters : [ pt1, pt2]
-          attrs[attr]= MultiPoint.from_coordinates(value)
-        elsif value.is_a?(Envelope)
-          attrs[attr]= MultiPoint.from_points([value.lower_corner,value.upper_corner])
-        end
-        "MBRIntersects(?, #{table_name}.#{connection.quote_column_name(attr)}) " 
-      else
-        #original stuff
-        "#{table_name}.#{connection.quote_column_name(attr)} #{attribute_condition(value)}"
-      end
-    end.join(' AND ')
-    
-    replace_bind_variables(conditions, expand_range_bind_variables(attrs.values))
   end
 end
 

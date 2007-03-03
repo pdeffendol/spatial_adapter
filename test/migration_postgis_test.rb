@@ -77,21 +77,39 @@ class MigrationPostgisTest < Test::Unit::TestCase
     assert_equal(0,connection.indexes("parks").length) #index on id does not count
     
     ActiveRecord::Schema.define do      
-      add_index "parks","geom",:spatial=>true,:name => "example_spatial_index"
+      add_index "parks","geom",:spatial=>true
+    end
+    
+    #TEST
+    assert_equal(1,connection.indexes("parks").length)
+    assert(connection.indexes("parks")[0].spatial)
+    
+    ActiveRecord::Schema.define do
+      remove_index "parks", "geom"
+    end
+    
+    #TEST
+    assert_equal(0,connection.indexes("parks").length)
+    
+    ActiveRecord::Schema.define do
+      remove_column "parks","geom2"
+    end
+    
+    #testing with point
+    ActiveRecord::Schema.define do
+      add_column "parks","geom2", :point
+    end
+    
+    ActiveRecord::Schema.define do      
+      add_index "parks","geom2",:spatial=>true,:name => "example_spatial_index"
     end
     
     #TEST
     assert_equal(1,connection.indexes("parks").length)
     assert(connection.indexes("parks")[0].spatial)
     assert_equal("example_spatial_index",connection.indexes("parks")[0].name)
+    
 
-    ActiveRecord::Schema.define do
-      remove_index "parks",:name=> "example_spatial_index"
-    end
-    
-    #TEST
-    assert_equal(0,connection.indexes("parks").length)
-    
   end
 
   def test_keyword_column_name

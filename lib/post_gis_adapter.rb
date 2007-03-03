@@ -143,7 +143,7 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
   
   #Adds a GIST spatial index to a column. Its name will be <table_name>_<column_name>_spatial_index unless the key :name is present in the options hash, in which case its value is taken as the name of the index.
   def add_index(table_name,column_name,options = {})
-    index_name = options[:name] ||"#{table_name}_#{Array(column_name).first}_index"
+    index_name = options[:name] || index_name(table_name,:column => Array(column_name).first)
     if options[:spatial]
       if column_name.is_a?(Array) and column_name.length > 1
         #one by one or error : Should raise exception instead? ; use default name even if name passed as argument

@@ -108,18 +108,10 @@ ActiveRecord::ConnectionAdapters::MysqlAdapter.class_eval do
   #Redefines add_index to support the case where the index is spatial
   #If the :spatial key in the options table is true, then the sql string for a spatial index is created
   def add_index(table_name,column_name,options = {})
-    index_name = options[:name] || index_name(table_name,:column => Array(column_name).first)
+    index_name = options[:name] || index_name(table_name,:column => Array(column_name))
     
     if options[:spatial]
-      if column_name.is_a?(Array) and column_name.length > 1
-        #one by one or error : Should raise exception instead? ; use default name even if name passed as argument
-        Array(column_name).each do |col|
-          execute "CREATE SPATIAL INDEX #{table_name}_#{col}_index ON #{table_name} (#{col})"
-        end
-      else
-        col = Array(column_name)[0]
-        execute "CREATE SPATIAL INDEX #{index_name} ON #{table_name} (#{col})"
-      end
+      execute "CREATE SPATIAL INDEX #{index_name} ON #{table_name} (#{Array(column_name).join(", ")})"
     else
       index_type = options[:unique] ? "UNIQUE" : ""
       #all together

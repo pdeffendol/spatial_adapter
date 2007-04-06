@@ -43,19 +43,19 @@ ActiveRecord::Base.class_eval do
   else
     def self.get_conditions(attrs)
       attrs.map do |attr, value|
-      if columns_hash[attr].is_a?(SpatialColumn)
-        if value.is_a?(Array)
-          attrs[attr]= "BOX3D(" + value[0].join(" ") + "," + value[1].join(" ") + ")"
-          "#{table_name}.#{connection.quote_column_name(attr)} && SetSRID(?::box3d, #{value[2] || DEFAULT_SRID} ) " 
-        elsif value.is_a?(Envelope)
-          attrs[attr]= "BOX3D(" + value.lower_corner.text_representation + "," + value.upper_corner.text_representation + ")"
-          "#{table_name}.#{connection.quote_column_name(attr)} && SetSRID(?::box3d, #{value.srid} ) " 
+        if columns_hash[attr].is_a?(SpatialColumn)
+          if value.is_a?(Array)
+            attrs[attr]= "BOX3D(" + value[0].join(" ") + "," + value[1].join(" ") + ")"
+            "#{table_name}.#{connection.quote_column_name(attr)} && SetSRID(?::box3d, #{value[2] || DEFAULT_SRID} ) " 
+          elsif value.is_a?(Envelope)
+            attrs[attr]= "BOX3D(" + value.lower_corner.text_representation + "," + value.upper_corner.text_representation + ")"
+            "#{table_name}.#{connection.quote_column_name(attr)} && SetSRID(?::box3d, #{value.srid} ) " 
+          else
+            "#{table_name}.#{connection.quote_column_name(attr)} && ? " 
+          end
         else
-          "#{table_name}.#{connection.quote_column_name(attr)} && ? " 
+          "#{table_name}.#{connection.quote_column_name(attr)} #{attribute_condition(value)}"
         end
-      else
-        "#{table_name}.#{connection.quote_column_name(attr)} #{attribute_condition(value)}"
-      end
       end.join(' AND ')
     end
     if ActiveRecord::VERSION::STRING == "1.15.1"

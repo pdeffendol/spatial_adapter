@@ -118,7 +118,7 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
   alias :original_remove_column :remove_column
   def remove_column(table_name,column_name)
     columns(table_name).each do |col|
-      if col.name == column_name 
+      if col.name == column_name.to_s 
         #check if the column is geometric
         unless geometry_data_types[col.type].nil?
           execute "SELECT DropGeometryColumn('#{table_name}','#{column_name}')"

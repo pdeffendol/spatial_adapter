@@ -11,7 +11,7 @@ namespace :test do
 
   Rake::TestTask::new(:postgis => "db:postgis" ) do |t|
     t.test_files = FileList['test/*_postgis_test.rb']
-    t.verbose = true
+    t.verbose = true 
   end
 end
 

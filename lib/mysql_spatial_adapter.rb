@@ -52,15 +52,45 @@ ActiveRecord::Base.class_eval do
         end
       end.join(' AND ')
     end
+    def self.get_rails2_conditions(attrs)
+      attrs.map do |attr, value|
+        attr = attr.to_s
+        if columns_hash[attr].is_a?(SpatialColumn)
+         if value.is_a?(Array)
+            #using some georuby utility : The multipoint has a bbox whose corners are the 2 points passed as parameters : [ pt1, pt2]
+            attrs[attr.to_sym]=MultiPoint.from_coordinates(value)
+          elsif value.is_a?(Envelope)
+            attrs[attr.to_sym]=MultiPoint.from_points([value.lower_corner,value.upper_corner])
+          end
+          "MBRIntersects(?, #{table_name}.#{connection.quote_column_name(attr)}) " 
+        else
+          #original stuff
+          # Extract table name from qualified attribute names.
+          if attr.include?('.')
+            table_name, attr = attr.split('.', 2)
+            table_name = connection.quote_table_name(table_name)
+          else
+            table_name = quoted_table_name
+          end
+          "#{table_name}.#{connection.quote_column_name(attr)} #{attribute_condition(value)}"
+        end
+      end.join(' AND ')
+    end
     if ActiveRecord::VERSION::STRING == "1.15.1"
       def self.sanitize_sql_hash(attrs)
         conditions = get_conditions(attrs)
         replace_bind_variables(conditions, attrs.values)
       end
-    else
+    elsif ActiveRecord::VERSION::STRING.starts_with?("1.15")
       #For Rails >= 1.2
       def self.sanitize_sql_hash(attrs)
         conditions = get_conditions(attrs)
+        replace_bind_variables(conditions, expand_range_bind_variables(attrs.values))
+      end
+    else
+      #For Rails >= 2
+      def self.sanitize_sql_hash_for_conditions(attrs)
+        conditions = get_rails2_conditions(attrs)
         replace_bind_variables(conditions, expand_range_bind_variables(attrs.values))
       end
     end

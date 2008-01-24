@@ -1,7 +1,7 @@
 $:.unshift(File.dirname(__FILE__) + '/../../lib')
 
 require 'rubygems'
-require_gem 'activerecord'
+require 'activerecord'
 
 ActiveRecord::Base.establish_connection(YAML.load_file(File.dirname(__FILE__) +  '/../db/database_mysql.yml'))
 

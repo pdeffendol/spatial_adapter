@@ -43,12 +43,13 @@ ActiveRecord::Base.class_eval do
   else
     def self.get_conditions(attrs)
       attrs.map do |attr, value|
+        attr = attr.to_s
         if columns_hash[attr].is_a?(SpatialColumn)
           if value.is_a?(Array)
-            attrs[attr]= "BOX3D(" + value[0].join(" ") + "," + value[1].join(" ") + ")"
+            attrs[attr.to_sym]= "BOX3D(" + value[0].join(" ") + "," + value[1].join(" ") + ")"
             "#{table_name}.#{connection.quote_column_name(attr)} && SetSRID(?::box3d, #{value[2] || DEFAULT_SRID} ) " 
           elsif value.is_a?(Envelope)
-            attrs[attr]= "BOX3D(" + value.lower_corner.text_representation + "," + value.upper_corner.text_representation + ")"
+            attrs[attr.to_sym]= "BOX3D(" + value.lower_corner.text_representation + "," + value.upper_corner.text_representation + ")"
             "#{table_name}.#{connection.quote_column_name(attr)} && SetSRID(?::box3d, #{value.srid} ) " 
           else
             "#{table_name}.#{connection.quote_column_name(attr)} && ? " 
@@ -63,8 +64,14 @@ ActiveRecord::Base.class_eval do
         conditions = get_conditions(attrs)
         replace_bind_variables(conditions, attrs.values)
       end
-    else
+    elsif ActiveRecord::VERSION::STRING.starts_with?("1.15")
       def self.sanitize_sql_hash(attrs)
+        conditions = get_conditions(attrs)
+        replace_bind_variables(conditions, expand_range_bind_variables(attrs.values))
+      end
+    else
+      #For Rails >= 2
+      def self.sanitize_sql_hash_for_conditions(attrs)
         conditions = get_conditions(attrs)
         replace_bind_variables(conditions, expand_range_bind_variables(attrs.values))
       end
@@ -194,10 +201,17 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
     column_definitions(table_name).collect do |name, type, default, notnull|
       if type =~ /geometry/i and raw_geom_infos[name]
         raw_geom_info = raw_geom_infos[name]
-        
-        ActiveRecord::ConnectionAdapters::SpatialPostgreSQLColumn.new(name,default_value(default),raw_geom_info.type,notnull == "f",raw_geom_info.srid,raw_geom_info.with_z,raw_geom_info.with_m)
+        if ActiveRecord::VERSION::STRING >= "2.0.0"
+          ActiveRecord::ConnectionAdapters::SpatialPostgreSQLColumn.new(name, default,raw_geom_info.type, notnull == "f", raw_geom_info.srid, raw_geom_info.with_z, raw_geom_info.with_m)
+        else
+          ActiveRecord::ConnectionAdapters::SpatialPostgreSQLColumn.new(name, default_value(default), raw_geom_info.type, notnull == "f", raw_geom_info.srid, raw_geom_info.with_z, raw_geom_info.with_m)
+        end
       else
-        ActiveRecord::ConnectionAdapters::Column.new(name, default_value(default), translate_field_type(type),notnull == "f")
+        if ActiveRecord::VERSION::STRING >= "2.0.0"
+          ActiveRecord::ConnectionAdapters::Column.new(name, default, type,notnull == "f")
+        else
+          ActiveRecord::ConnectionAdapters::Column.new(name, default_value(default), translate_field_type(type),notnull == "f")
+        end
       end
     end
   end

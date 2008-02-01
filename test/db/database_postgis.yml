@@ -1,4 +1,4 @@
 adapter: postgresql
 database: spatial_adapter_plugin_test
-username: gvellut
+username: postgres
 password: 

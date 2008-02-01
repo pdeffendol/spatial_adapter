@@ -41,6 +41,7 @@ ActiveRecord::Base.class_eval do
       [ conditions.join(" AND "), *arguments[0...attribute_names.length] ]
     end
   else
+    #Vit Ondruch & Tilmann Singer 's patch
     def self.get_conditions(attrs)
       attrs.map do |attr, value|
         attr = attr.to_s
@@ -210,10 +211,21 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
         if ActiveRecord::VERSION::STRING >= "2.0.0"
           ActiveRecord::ConnectionAdapters::Column.new(name, default, type,notnull == "f")
         else
+          #Vit Ondruch & Tilmann Singer 's patch
           ActiveRecord::ConnectionAdapters::Column.new(name, default_value(default), translate_field_type(type),notnull == "f")
         end
       end
     end
+  end
+
+  #Pete Deffendol's patch
+  alias :original_disable_referential_integrity :disable_referential_integrity
+  def disable_referential_integrity(&block) #:nodoc:
+    ignore_tables = %w{ geometry_columns spatial_ref_sys }
+    execute(tables.select { |name| !ignore_tables.include?(name) }.collect { |name| "ALTER TABLE #{quote_table_name(name)} DISABLE TRIGGER ALL" }.join(";"))
+    yield
+  ensure
+    execute(tables.select { |name| !ignore_tables.include?(name)}.collect { |name| "ALTER TABLE #{quote_table_name(name)} ENABLE TRIGGER ALL" }.join(";"))
   end
       
   private
@@ -371,3 +383,4 @@ module ActiveRecord
     end
   end
 end
+

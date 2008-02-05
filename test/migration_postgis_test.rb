@@ -21,9 +21,9 @@ class MigrationPostgisTest < Test::Unit::TestCase
     #create a table with a geometric column
     ActiveRecord::Schema.define do
       create_table "parks", :force => true do |t|
-        t.column "data" , :string, :limit => 100
-        t.column "value", :integer
-        t.column "geom", :polygon, :null=>false, :srid => 555 , :with_z => true,:with_m => true
+        t.string "data",  :limit => 100
+        t.integer "value"
+        t.polygon "geom", :null=>false, :srid => 555 , :with_z => true,:with_m => true
       end
     end
     
@@ -115,10 +115,10 @@ class MigrationPostgisTest < Test::Unit::TestCase
   def test_keyword_column_name
     ActiveRecord::Schema.define do
       create_table "parks", :force => true do |t|
-        t.column "data" , :string, :limit => 100
-        t.column "value", :integer
+        t.string "data", :limit => 100
+        t.integer "value"
         #location is a postgreSQL keyword and is surrounded by double-quotes ("") when appearing in constraint descriptions ; tests a bug corrected in version 39
-        t.column "location", :point,:null=>false,:srid => 0, :with_m => true, :with_z => true
+        t.point "location", :null=>false,:srid => 0, :with_m => true, :with_z => true
       end
     end
 
@@ -144,9 +144,9 @@ class MigrationPostgisTest < Test::Unit::TestCase
     #Force the creation of a table
     ActiveRecord::Schema.define do
       create_table "parks", :force => true do |t|
-        t.column "data" , :string, :limit => 100
-        t.column "value", :integer
-        t.column "geom", :multi_polygon,:null=>false,:srid => 0, :with_m => true, :with_z => true
+        t.string "data" , :limit => 100
+        t.integer "value"
+        t.multi_polygon "geom", :null=>false,:srid => 0, :with_m => true, :with_z => true
       end
       
       add_index "parks","geom",:spatial=>true,:name => "example_spatial_index"

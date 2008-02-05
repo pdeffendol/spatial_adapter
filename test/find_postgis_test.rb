@@ -11,8 +11,8 @@ class FindPostgisTest < Test::Unit::TestCase
   def setup
     ActiveRecord::Schema.define() do
       create_table "parks", :force => true do |t|
-        t.column "data" , :string, :limit => 100
-        t.column "geom", :point,:null=>false,:srid=>123
+        t.string "data", :limit => 100
+        t.point "geom", :null=>false,:srid=>123
       end
       add_index "parks","geom",:spatial=>true,:name => "example_spatial_index"
     end

@@ -3,6 +3,7 @@ require 'geo_ruby'
 require 'common_spatial_adapter'
 
 include GeoRuby::SimpleFeatures
+include SpatialAdapter
 
 #tables to ignore in migration : relative to PostGIS management of geometric columns
 ActiveRecord::SchemaDumper.ignore_tables << "spatial_ref_sys" << "geometry_columns"
@@ -310,7 +311,7 @@ module ActiveRecord
       attr_reader :geom_columns
       
       def column(name, type, options = {})
-        unless @base.geometry_data_types[type].nil?
+        unless @base.geometry_data_types[type.to_sym].nil?
           geom_column = PostgreSQLColumnDefinition.new(@base,name, type)
           geom_column.null = options[:null]
           geom_column.srid = options[:srid] || -1
@@ -323,6 +324,17 @@ module ActiveRecord
           super(name,type,options)
         end
       end
+      
+      SpatialAdapter.geometry_data_types.keys.each do |column_type|
+        class_eval <<-EOV
+          def #{column_type}(*args)
+            options = args.extract_options!
+            column_names = args
+            
+            column_names.each { |name| column(name, '#{column_type}', options) }
+          end
+        EOV
+      end      
     end
 
     class PostgreSQLColumnDefinition < ColumnDefinition

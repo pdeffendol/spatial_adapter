@@ -6,6 +6,9 @@ require 'common/common_mysql'
 class Park < ActiveRecord::Base
 end
 
+class CxGeographiclocation < ActiveRecord::Base
+  set_table_name "cx_geographiclocation"
+end
 
 class MigrationMysqlTest < Test::Unit::TestCase
   
@@ -130,6 +133,68 @@ class MigrationMysqlTest < Test::Unit::TestCase
     assert(connection.indexes("parks")[0].spatial)
     assert_equal("example_spatial_index",connection.indexes("parks")[0].name)
    end
+
+  def test_teresa
+     connection = ActiveRecord::Base.connection
+    
+    #creation
+    ActiveRecord::Schema.define() do
+      create_table(:cx_geographiclocation, :primary_key => "GeographicLocationID", :options=>"ENGINE=MyISAM", :force => true ) do |t|
+        t.column "CountryID", :integer,                           :null => false
+        t.column  "AddressLine1", :string,         :limit => 100, :null => false
+        t.column  "AddressLine2",  :string,        :limit => 100
+        t.column  "AddressLine3", :string,        :limit => 50
+        t.column  "City", :string,                :limit => 50
+        t.column  "StateProvince", :string,       :limit => 50
+        t.column  "PostalCode", :string,          :limit => 30
+        t.column  "Geocode", :point, :null  => false
+      end
+    end
+    
+    #test creation
+    assert_equal(9,connection.columns("cx_geographiclocation").length)
+    connection.columns("cx_geographiclocation").each do |col|
+      if col.name == "Geocode"
+        assert(col.is_a?(SpatialColumn))
+        assert(:geometry,col.type)
+        assert(:point,col.geometry_type)
+        assert(! col.null)
+      end
+    end
+
+    #creation index
+    ActiveRecord::Schema.define() do
+      add_index "cx_geographiclocation", ["addressline1"], :name => "ix_cx_geographiclocation_addressline1"
+      add_index "cx_geographiclocation", ["countryid"], :name => "ix_cx_geographiclocation_countryid"
+      add_index "cx_geographiclocation", "Geocode", :spatial=>true
+    end
+
+    #test index
+    assert_equal(3,connection.indexes("cx_geographiclocation").length)
+    assert(connection.indexes("cx_geographiclocation")[2].spatial)    
+
+    #insertion points
+    1.upto(1000) do |i|
+      pt = CxGeographiclocation.new("CountryID" => i, "AddressLine1" =>"Bouyoul", "Geocode" => Point.from_x_y(-180 + rand(360) + rand(),-90 + rand(180) + rand())) #insert floats
+      assert(pt.save)
+    end
+    
+    #fetch point and test
+    pt = CxGeographiclocation.find(:first)
+    assert(pt)
+    assert_equal("Bouyoul",pt.attributes["AddressLine1"])
+
+
+    #fetch by MBR and test
+    pts =  CxGeographiclocation.find_all_by_Geocode([[-181 + rand(),-91 + rand()],[181 + rand(),91 + rand()]]) #selects all : range limits are float
+    assert(pts)
+    assert(pts.is_a?(Array))
+    assert_equal(1000,pts.length)
+    assert_equal("Bouyoul",pts[0].attributes["AddressLine1"])
+
+   end
+
+  
 
   
 end

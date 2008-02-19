@@ -179,6 +179,10 @@ class MigrationMysqlTest < Test::Unit::TestCase
       assert(pt.save)
     end
     
+    #should be outside the fetch by MBR
+    pt = CxGeographiclocation.new("CountryID" => 1337, "AddressLine1" =>"Bouyoul", "Geocode" => Point.from_x_y(-185,-90)) #insert floats
+    assert(pt.save)
+    
     #fetch point and test
     pt = CxGeographiclocation.find(:first)
     assert(pt)

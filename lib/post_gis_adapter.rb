@@ -210,7 +210,7 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
         end
       else
         if ActiveRecord::VERSION::STRING >= "2.0.0"
-          ActiveRecord::ConnectionAdapters::Column.new(name, default, type,notnull == "f")
+          ActiveRecord::ConnectionAdapters::Column.new(name, ActiveRecord::ConnectionAdapters::PostgreSQLColumn.extract_value_from_default( default), type,notnull == "f")
         else
           #Vit Ondruch & Tilmann Singer 's patch
           ActiveRecord::ConnectionAdapters::Column.new(name, default_value(default), translate_field_type(type),notnull == "f")

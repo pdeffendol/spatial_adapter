@@ -147,7 +147,7 @@ class MigrationMysqlTest < Test::Unit::TestCase
         t.column  "City", :string,                :limit => 50
         t.column  "StateProvince", :string,       :limit => 50
         t.column  "PostalCode", :string,          :limit => 30
-        t.column  "Geocode", :point, :null  => false
+        t.column  "Geocode", :geometry, :null  => false #:geometry ok too : col.geometry_type test to change below
       end
     end
     
@@ -166,7 +166,7 @@ class MigrationMysqlTest < Test::Unit::TestCase
     ActiveRecord::Schema.define() do
       add_index "cx_geographiclocation", ["addressline1"], :name => "ix_cx_geographiclocation_addressline1"
       add_index "cx_geographiclocation", ["countryid"], :name => "ix_cx_geographiclocation_countryid"
-      add_index "cx_geographiclocation", "Geocode", :spatial=>true
+      add_index "cx_geographiclocation", ["Geocode"], :spatial=>true
     end
 
     #test index
@@ -174,7 +174,7 @@ class MigrationMysqlTest < Test::Unit::TestCase
     assert(connection.indexes("cx_geographiclocation")[2].spatial)    
 
     #insertion points
-    1.upto(1000) do |i|
+    1.upto(10000) do |i|
       pt = CxGeographiclocation.new("CountryID" => i, "AddressLine1" =>"Bouyoul", "Geocode" => Point.from_x_y(-180 + rand(360) + rand(),-90 + rand(180) + rand())) #insert floats
       assert(pt.save)
     end
@@ -193,7 +193,7 @@ class MigrationMysqlTest < Test::Unit::TestCase
     pts =  CxGeographiclocation.find_all_by_Geocode([[-181 + rand(),-91 + rand()],[181 + rand(),91 + rand()]]) #selects all : range limits are float
     assert(pts)
     assert(pts.is_a?(Array))
-    assert_equal(1000,pts.length)
+    assert_equal(10000,pts.length)
     assert_equal("Bouyoul",pts[0].attributes["AddressLine1"])
 
    end

@@ -1,3 +1,4 @@
+$:.unshift(File.join(File.dirname(__FILE__) ,'../../gems/georuby/lib/'))
 require 'rake'
 require 'rake/testtask'
 require 'rake/rdoctask'

@@ -100,6 +100,16 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
     end
   end
 
+  alias :original_tables :tables
+  def tables(name = nil) #:nodoc:
+    schemas = schema_search_path.split(/,/).map { |p| quote(p.strip) }.join(',')
+    original_tables(name) + query(<<-SQL, name).map { |row| row[0] }
+      SELECT viewname
+        FROM pg_views
+        WHERE schemaname IN (#{schemas})
+    SQL
+  end
+
   def create_table(name, options = {})
     table_definition = ActiveRecord::ConnectionAdapters::PostgreSQLTableDefinition.new(self)
     table_definition.primary_key(options[:primary_key] || "id") unless options[:id] == false
@@ -233,39 +243,23 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
          
   def column_spatial_info(table_name)
     constr = query <<-end_sql
-    SELECT pg_get_constraintdef(oid) 
-    FROM pg_constraint
-    WHERE conrelid = '#{table_name}'::regclass
-    AND contype = 'c'
+SELECT * FROM geometry_columns WHERE f_table_name = '#{table_name}'
     end_sql
     
     raw_geom_infos = {}
     constr.each do |constr_def_a|
-      constr_def = constr_def_a[0] #only 1 column in the result
-      if constr_def =~ /geometrytype\(["']?([^"')]+)["']?\)\s*=\s*'([^']+)'/i
-        column_name,type = $1,$2
-        if type[-1] == ?M
-          with_m = true
-          type.chop!
-        else
-          with_m = false
-        end
-        raw_geom_info = raw_geom_infos[column_name] || ActiveRecord::ConnectionAdapters::RawGeomInfo.new
-        raw_geom_info.type = type
-        raw_geom_info.with_m = with_m
-        raw_geom_infos[column_name] = raw_geom_info
-      elsif constr_def =~ /ndims\(["']?([^"')]+)["']?\)\s*=\s*(\d+)/i
-        column_name,dimension = $1,$2
-        raw_geom_info = raw_geom_infos[column_name] || ActiveRecord::ConnectionAdapters::RawGeomInfo.new
-        raw_geom_info.dimension = dimension.to_i
-        raw_geom_infos[column_name] = raw_geom_info
-      elsif constr_def =~ /srid\(["']?([^"')]+)["']?\)\s*=\s*(-?\d+)/i
-        column_name,srid = $1,$2
-        raw_geom_info = raw_geom_infos[column_name] || ActiveRecord::ConnectionAdapters::RawGeomInfo.new
-        raw_geom_info.srid = srid.to_i
-        raw_geom_infos[column_name] = raw_geom_info
-      end #if constr_def
-    end #constr.each
+       raw_geom_infos[constr_def_a[3]] ||= ActiveRecord::ConnectionAdapters::RawGeomInfo.new
+      raw_geom_infos[constr_def_a[3]].type = constr_def_a[6]
+      raw_geom_infos[constr_def_a[3]].dimension = constr_def_a[4].to_i
+      raw_geom_infos[constr_def_a[3]].srid = constr_def_a[5].to_i
+
+      if raw_geom_infos[constr_def_a[3]].type[-1] == ?M
+        raw_geom_infos[constr_def_a[3]].with_m = true
+        raw_geom_infos[constr_def_a[3]].type.chop!
+      else
+        raw_geom_infos[constr_def_a[3]].with_m = false
+      end
+    end
 
     raw_geom_infos.each_value do |raw_geom_info|
       #check the presence of z and m

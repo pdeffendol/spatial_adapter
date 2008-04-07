@@ -6,6 +6,9 @@ require 'common/common_postgis'
 class Park < ActiveRecord::Base
 end
 
+class Viewpark < ActiveRecord::Base
+end
+
 
 class MigrationPostgisTest < Test::Unit::TestCase
   
@@ -137,6 +140,34 @@ class MigrationPostgisTest < Test::Unit::TestCase
         assert(col.with_m)
       end
     end
+  end
+
+  
+  def test_view
+    ActiveRecord::Schema.define do
+      create_table "parks", :force => true do |t|
+        t.column "data" , :string, :limit => 100
+        t.column "value", :integer
+        t.column "geom", :point,:null=>false
+      end
+    end
+
+    pt = Park.new(:data => "Test", :geom => Point.from_x_y(1.2,4.5))
+    assert(pt.save)
+
+    ActiveRecord::Base.connection.execute('CREATE VIEW viewparks as SELECT * from parks')
+    if not ActiveRecord::Base.connection.execute("select * from geometry_columns where f_table_name = 'viewparks' and f_geometry_column = 'geom'") #do not add if already there
+      #mark the geom column in the view as geometric
+      ActiveRecord::Base.connection.execute("insert into geometry_columns values ('','public','viewparks','geom',2,-1,'POINT')")
+    end
+
+    pt = Viewpark.find(:first)
+    assert(pt)
+    assert_equal("Test",pt.data)
+    assert_equal(Point.from_x_y(1.2,4.5),pt.geom)
+
+    ActiveRecord::Base.connection.execute('DROP VIEW viewparks')
+
   end
 
   

@@ -156,10 +156,10 @@ class MigrationPostgisTest < Test::Unit::TestCase
     assert(pt.save)
 
     ActiveRecord::Base.connection.execute('CREATE VIEW viewparks as SELECT * from parks')
-    if not ActiveRecord::Base.connection.execute("select * from geometry_columns where f_table_name = 'viewparks' and f_geometry_column = 'geom'") #do not add if already there
+    #if not ActiveRecord::Base.connection.execute("select * from geometry_columns where f_table_name = 'viewparks' and f_geometry_column = 'geom'") #do not add if already there
       #mark the geom column in the view as geometric
-      ActiveRecord::Base.connection.execute("insert into geometry_columns values ('','public','viewparks','geom',2,-1,'POINT')")
-    end
+      #ActiveRecord::Base.connection.execute("insert into geometry_columns values ('','public','viewparks','geom',2,-1,'POINT')")
+    #end
 
     pt = Viewpark.find(:first)
     assert(pt)

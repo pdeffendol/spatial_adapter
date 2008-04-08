@@ -211,12 +211,20 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
     raw_geom_infos = column_spatial_info(table_name)
     
     column_definitions(table_name).collect do |name, type, default, notnull|
-      if type =~ /geometry/i and raw_geom_infos[name]
+      if type =~ /geometry/i
         raw_geom_info = raw_geom_infos[name]
         if ActiveRecord::VERSION::STRING >= "2.0.0"
-          ActiveRecord::ConnectionAdapters::SpatialPostgreSQLColumn.new(name, default,raw_geom_info.type, notnull == "f", raw_geom_info.srid, raw_geom_info.with_z, raw_geom_info.with_m)
+          if raw_geom_info.nil?
+             ActiveRecord::ConnectionAdapters::SpatialPostgreSQLColumn.create_simplified(name,default,notnull == "f")
+          else
+            ActiveRecord::ConnectionAdapters::SpatialPostgreSQLColumn.new(name, default,raw_geom_info.type, notnull == "f", raw_geom_info.srid, raw_geom_info.with_z, raw_geom_info.with_m)
+          end
         else
-          ActiveRecord::ConnectionAdapters::SpatialPostgreSQLColumn.new(name, default_value(default), raw_geom_info.type, notnull == "f", raw_geom_info.srid, raw_geom_info.with_z, raw_geom_info.with_m)
+          if raw_geom_info.nil?
+            ActiveRecord::ConnectionAdapters::SpatialPostgreSQLColumn.create_simplified(name,default_value(default),notnull == "f")
+          else
+            ActiveRecord::ConnectionAdapters::SpatialPostgreSQLColumn.new(name, default_value(default), raw_geom_info.type, notnull == "f", raw_geom_info.srid, raw_geom_info.with_z, raw_geom_info.with_m)
+          end
         end
       else
         if ActiveRecord::VERSION::STRING >= "2.0.0"
@@ -386,6 +394,11 @@ module ActiveRecord
         return string unless string.is_a?(String)
         GeoRuby::SimpleFeatures::Geometry.from_hex_ewkb(string) rescue nil
       end
+      
+      def self.create_simplified(name,default,null = true)
+        new(name,default,"geometry",null,nil,nil,nil)
+      end
+
     end
   end
 end

@@ -236,15 +236,18 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
       end
     end
   end
-
-  #Pete Deffendol's patch
-  alias :original_disable_referential_integrity :disable_referential_integrity
-  def disable_referential_integrity(&block) #:nodoc:
-    ignore_tables = %w{ geometry_columns spatial_ref_sys }
-    execute(tables.select { |name| !ignore_tables.include?(name) }.collect { |name| "ALTER TABLE #{quote_table_name(name)} DISABLE TRIGGER ALL" }.join(";"))
-    yield
-  ensure
-    execute(tables.select { |name| !ignore_tables.include?(name)}.collect { |name| "ALTER TABLE #{quote_table_name(name)} ENABLE TRIGGER ALL" }.join(";"))
+  
+  # For version of Rails where exists disable_referential_integrity...
+  if self.instance_methods.include? "disable_referential_integrity"
+    #Pete Deffendol's patch
+    alias :original_disable_referential_integrity :disable_referential_integrity
+    def disable_referential_integrity(&block) #:nodoc:
+      ignore_tables = %w{ geometry_columns spatial_ref_sys }
+      execute(tables.select { |name| !ignore_tables.include?(name) }.collect { |name| "ALTER TABLE #{quote_table_name(name)} DISABLE TRIGGER ALL" }.join(";"))
+      yield
+    ensure
+      execute(tables.select { |name| !ignore_tables.include?(name)}.collect { |name| "ALTER TABLE #{quote_table_name(name)} ENABLE TRIGGER ALL" }.join(";"))
+    end
   end
       
   private

@@ -135,11 +135,12 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
   end
   
   alias :original_remove_column :remove_column
-  def remove_column(table_name,column_name)
+  def remove_column(table_name,column_name, options = {})
     columns(table_name).each do |col|
       if col.name == column_name.to_s 
         #check if the column is geometric
-        unless geometry_data_types[col.type].nil?
+        unless geometry_data_types[col.type].nil? or
+               (options[:remove_using_dropgeometrycolumn] == false)
           execute "SELECT DropGeometryColumn('#{table_name}','#{column_name}')"
         else
           original_remove_column(table_name,column_name)
@@ -150,7 +151,7 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
   
   alias :original_add_column :add_column
   def add_column(table_name, column_name, type, options = {})
-    unless geometry_data_types[type].nil?
+    unless geometry_data_types[type].nil? or (options[:create_using_addgeometrycolumn] == false)
       geom_column = ActiveRecord::ConnectionAdapters::PostgreSQLColumnDefinition.new(self,column_name, type, nil,nil,options[:null],options[:srid] || -1 , options[:with_z] || false , options[:with_m] || false)
       execute geom_column.to_sql(table_name)
     else
@@ -237,7 +238,7 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
     end
   end
   
-  # For version of Rails where exists disable_referential_integrity...
+  # For version of Rails where exists disable_referential_integrity
   if self.instance_methods.include? "disable_referential_integrity"
     #Pete Deffendol's patch
     alias :original_disable_referential_integrity :disable_referential_integrity
@@ -316,7 +317,9 @@ module ActiveRecord
       attr_reader :geom_columns
       
       def column(name, type, options = {})
-        unless @base.geometry_data_types[type.to_sym].nil?
+        unless (@base.geometry_data_types[type.to_sym].nil? or
+                (options[:create_using_addgeometrycolumn] == false))
+
           geom_column = PostgreSQLColumnDefinition.new(@base,name, type)
           geom_column.null = options[:null]
           geom_column.srid = options[:srid] || -1

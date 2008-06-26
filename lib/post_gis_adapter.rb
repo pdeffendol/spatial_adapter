@@ -85,6 +85,17 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
 
   include SpatialAdapter
 
+  # SCHEMA STATEMENTS ========================================
+  
+  alias :original_recreate_database :recreate_database
+  def recreate_database(configuration, enc_option)
+    `dropdb -U "#{configuration["test"]["username"]}" #{configuration["test"]["database"]}`
+    `createdb #{enc_option} -U "#{configuration["test"]["username"]}" #{configuration["test"]["database"]}`
+    `createlang -U "#{configuration["test"]["username"]}" plpgsql #{configuration["test"]["database"]}`
+    `psql -d #{configuration["test"]["database"]} -f db/spatial/lwpostgis.sql`
+    `psql -d #{configuration["test"]["database"]} -f db/spatial/spatial_ref_sys.sql`
+  end
+  
   alias :original_native_database_types :native_database_types
   def native_database_types
     original_native_database_types.merge!(geometry_data_types)
@@ -135,12 +146,11 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
   end
   
   alias :original_remove_column :remove_column
-  def remove_column(table_name,column_name, options = {})
+  def remove_column(table_name,column_name)
     columns(table_name).each do |col|
       if col.name == column_name.to_s 
         #check if the column is geometric
-        unless geometry_data_types[col.type].nil? or
-               (options[:remove_using_dropgeometrycolumn] == false)
+        unless geometry_data_types[col.type].nil?
           execute "SELECT DropGeometryColumn('#{table_name}','#{column_name}')"
         else
           original_remove_column(table_name,column_name)
@@ -151,7 +161,7 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
   
   alias :original_add_column :add_column
   def add_column(table_name, column_name, type, options = {})
-    unless geometry_data_types[type].nil? or (options[:create_using_addgeometrycolumn] == false)
+    unless geometry_data_types[type].nil?
       geom_column = ActiveRecord::ConnectionAdapters::PostgreSQLColumnDefinition.new(self,column_name, type, nil,nil,options[:null],options[:srid] || -1 , options[:with_z] || false , options[:with_m] || false)
       execute geom_column.to_sql(table_name)
     else
@@ -229,7 +239,7 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
         end
       else
         if ActiveRecord::VERSION::STRING >= "2.0.0"
-          ActiveRecord::ConnectionAdapters::Column.new(name, ActiveRecord::ConnectionAdapters::PostgreSQLColumn.extract_value_from_default( default), type,notnull == "f")
+          ActiveRecord::ConnectionAdapters::PostgreSQLColumn.new(name, ActiveRecord::ConnectionAdapters::PostgreSQLColumn.extract_value_from_default( default), type,notnull == "f")
         else
           #Vit Ondruch & Tilmann Singer 's patch
           ActiveRecord::ConnectionAdapters::Column.new(name, default_value(default), translate_field_type(type),notnull == "f")
@@ -237,18 +247,15 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
       end
     end
   end
-  
-  # For version of Rails where exists disable_referential_integrity
-  if self.instance_methods.include? "disable_referential_integrity"
-    #Pete Deffendol's patch
-    alias :original_disable_referential_integrity :disable_referential_integrity
-    def disable_referential_integrity(&block) #:nodoc:
-      ignore_tables = %w{ geometry_columns spatial_ref_sys }
-      execute(tables.select { |name| !ignore_tables.include?(name) }.collect { |name| "ALTER TABLE #{quote_table_name(name)} DISABLE TRIGGER ALL" }.join(";"))
-      yield
-    ensure
-      execute(tables.select { |name| !ignore_tables.include?(name)}.collect { |name| "ALTER TABLE #{quote_table_name(name)} ENABLE TRIGGER ALL" }.join(";"))
-    end
+
+  #Pete Deffendol's patch
+  alias :original_disable_referential_integrity :disable_referential_integrity
+  def disable_referential_integrity(&block) #:nodoc:
+    ignore_tables = %w{ geometry_columns spatial_ref_sys }
+    execute(tables.select { |name| !ignore_tables.include?(name) }.collect { |name| "ALTER TABLE #{quote_table_name(name)} DISABLE TRIGGER ALL" }.join(";"))
+    yield
+  ensure
+    execute(tables.select { |name| !ignore_tables.include?(name)}.collect { |name| "ALTER TABLE #{quote_table_name(name)} ENABLE TRIGGER ALL" }.join(";"))
   end
       
   private
@@ -317,9 +324,7 @@ module ActiveRecord
       attr_reader :geom_columns
       
       def column(name, type, options = {})
-        unless (@base.geometry_data_types[type.to_sym].nil? or
-                (options[:create_using_addgeometrycolumn] == false))
-
+        unless @base.geometry_data_types[type.to_sym].nil?
           geom_column = PostgreSQLColumnDefinition.new(@base,name, type)
           geom_column.null = options[:null]
           geom_column.srid = options[:srid] || -1

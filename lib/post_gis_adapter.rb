@@ -56,6 +56,8 @@ ActiveRecord::Base.class_eval do
           else
             "#{table_name}.#{connection.quote_column_name(attr)} && ? " 
           end
+        elsif ActiveRecord::VERSION::STRING.starts_with?("2.3")
+          "#{table_name}.#{attribute_condition(connection.quote_column_name(attr), value)}"
         else
           "#{table_name}.#{connection.quote_column_name(attr)} #{attribute_condition(value)}"
         end

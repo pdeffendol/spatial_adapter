@@ -72,7 +72,11 @@ ActiveRecord::Base.class_eval do
           else
             table_name = quoted_table_name
           end
-          "#{table_name}.#{connection.quote_column_name(attr)} #{attribute_condition(value)}"
+           begin # this works in AR 2.3.2 and later versions, it might work in earlier versions - this way of checking avoids using version numbers
+            attribute_condition("#{table_name}.#{connection.quote_column_name(attr)}", "#{value}") 
+           rescue ArgumentError # for some earlier versions of AR it definitely breaks
+             "#{table_name}.#{connection.quote_column_name(attr)} #{attribute_condition(value)}" 
+           end 
         end
       end.join(' AND ')
     end

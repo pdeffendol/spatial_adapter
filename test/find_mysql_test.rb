@@ -60,5 +60,10 @@ class FindMysqlTest < Test::Unit::TestCase
     assert(pts[0].data == "Point3")
   end
   
+  def test_find_by_non_geom_column_condition
+    pts = Park.find_all_by_data 'Point1'
+    assert(pts,'find by non-geom column is not working')
+  end
+  
 
 end

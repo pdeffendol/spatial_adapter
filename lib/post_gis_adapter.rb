@@ -56,11 +56,13 @@ ActiveRecord::Base.class_eval do
           else
             "#{table_name}.#{connection.quote_column_name(attr)} && ? " 
           end
-        elsif ActiveRecord::VERSION::STRING.starts_with?("2.3")
-          "#{table_name}.#{attribute_condition(connection.quote_column_name(attr), value)}"
         else
-          "#{table_name}.#{connection.quote_column_name(attr)} #{attribute_condition(value)}"
-        end
+        begin # this works in AR 2.3.2 and later versions, it might work in earlier versions - this way of checking avoids using version numbers
+         attribute_condition("#{table_name}.#{connection.quote_column_name(attr)}", "#{value}") 
+         rescue ArgumentError # for some earlier versions of AR it definitely breaks
+          "#{table_name}.#{connection.quote_column_name(attr)} #{attribute_condition(value)}" 
+         end 
+       end   
       end.join(' AND ')
     end
     if ActiveRecord::VERSION::STRING == "1.15.1"

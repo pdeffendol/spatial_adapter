@@ -1,2 +1,7 @@
 adapter: postgresql
-database: spatial_adapter_plugin_test
+database: gem_test
+host: localhost
+#username: postgres
+#password: 
+username: gem_test
+password: gem_test_password

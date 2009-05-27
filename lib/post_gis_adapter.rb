@@ -175,9 +175,7 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
     if options[:spatial]
       execute "CREATE INDEX #{index_name} ON #{table_name} USING GIST (#{Array(column_name).join(", ")} GIST_GEOMETRY_OPS)"
     else
-      index_type = options[:unique] ? "UNIQUE" : ""
-      #all together
-      execute "CREATE #{index_type} INDEX #{index_name} ON #{table_name} (#{Array(column_name).join(", ")})"
+      super
     end
   end
   

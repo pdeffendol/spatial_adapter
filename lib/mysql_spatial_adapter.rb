@@ -147,9 +147,7 @@ ActiveRecord::ConnectionAdapters::MysqlAdapter.class_eval do
     if options[:spatial]
       execute "CREATE SPATIAL INDEX #{index_name} ON #{table_name} (#{Array(column_name).join(", ")})"
     else
-      index_type = options[:unique] ? "UNIQUE" : ""
-      #all together
-      execute "CREATE #{index_type} INDEX #{index_name} ON #{table_name} (#{Array(column_name).join(", ")})"
+      super
     end
   end
 

@@ -58,7 +58,7 @@ ActiveRecord::Base.class_eval do
           end
         else
         begin # this works in AR 2.3.2 and later versions, it might work in earlier versions - this way of checking avoids using version numbers
-         attribute_condition("#{table_name}.#{connection.quote_column_name(attr)}", "#{value}") 
+         attribute_condition("#{table_name}.#{connection.quote_column_name(attr)}", value) 
          rescue ArgumentError # for some earlier versions of AR it definitely breaks
           "#{table_name}.#{connection.quote_column_name(attr)} #{attribute_condition(value)}" 
          end 

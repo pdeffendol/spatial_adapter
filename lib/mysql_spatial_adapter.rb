@@ -93,9 +93,47 @@ ActiveRecord::Base.class_eval do
       end
     else
       #For Rails >= 2
-      def self.sanitize_sql_hash_for_conditions(attrs)
-        conditions = get_rails2_conditions(attrs)
-        replace_bind_variables(conditions, expand_range_bind_variables(attrs.values))
+      if method(:sanitize_sql_hash_for_conditions).arity == 1
+        # Before Rails 2.3.3, the method had only one argument
+        def self.sanitize_sql_hash_for_conditions(attrs)
+          conditions = get_rails2_conditions(attrs)
+          replace_bind_variables(conditions, expand_range_bind_variables(attrs.values))
+        end
+      elsif method(:sanitize_sql_hash_for_conditions).arity == -2
+        # After Rails 2.3.3, the method had only two args, the last one optional
+        def self.sanitize_sql_hash_for_conditions(attrs, table_name = quoted_table_name)
+          attrs = expand_hash_conditions_for_aggregates(attrs)
+
+          conditions = attrs.map do |attr, value|
+            unless value.is_a?(Hash)
+              attr = attr.to_s
+
+              if columns_hash[attr].is_a?(SpatialColumn)
+                if value.is_a?(Array)
+                  #using some georuby utility : The multipoint has a bbox whose corners are the 2 points passed as parameters : [ pt1, pt2]
+                  attrs[attr.to_sym]=MultiPoint.from_coordinates(value)
+                elsif value.is_a?(Envelope)
+                  attrs[attr.to_sym]=MultiPoint.from_points([value.lower_corner,value.upper_corner])
+                end
+                "MBRIntersects(?, #{table_name}.#{connection.quote_column_name(attr)}) " 
+              else
+
+                # Extract table name from qualified attribute names.
+                if attr.include?('.')
+                  table_name, attr = attr.split('.', 2)
+                  table_name = connection.quote_table_name(table_name)
+                end
+              end
+              attribute_condition("#{table_name}.#{connection.quote_column_name(attr)}", value)
+            else
+              sanitize_sql_hash_for_conditions(value, connection.quote_table_name(attr.to_s))
+            end
+          end.join(' AND ')
+
+          replace_bind_variables(conditions, expand_range_bind_variables(attrs.values))
+        end
+      else
+        raise "Spatial Adapter will not work with this version of Rails"
       end
     end
   end

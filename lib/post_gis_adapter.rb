@@ -93,23 +93,25 @@ ActiveRecord::Base.class_eval do
             unless value.is_a?(Hash)
               attr = attr.to_s
 
+              # Extract table name from qualified attribute names.
+              if attr.include?('.')
+                table_name, attr = attr.split('.', 2)
+                table_name = connection.quote_table_name(table_name)
+              end
+
               if columns_hash[attr].is_a?(SpatialColumn)
                 if value.is_a?(Array)
-                  #using some georuby utility : The multipoint has a bbox whose corners are the 2 points passed as parameters : [ pt1, pt2]
-                  attrs[attr.to_sym]=MultiPoint.from_coordinates(value)
+                  attrs[attr.to_sym]= "BOX3D(" + value[0].join(" ") + "," + value[1].join(" ") + ")"
+                  "#{table_name}.#{connection.quote_column_name(attr)} && SetSRID(?::box3d, #{value[2] || DEFAULT_SRID} ) " 
                 elsif value.is_a?(Envelope)
-                  attrs[attr.to_sym]=MultiPoint.from_points([value.lower_corner,value.upper_corner])
+                  attrs[attr.to_sym]= "BOX3D(" + value.lower_corner.text_representation + "," + value.upper_corner.text_representation + ")"
+                  "#{table_name}.#{connection.quote_column_name(attr)} && SetSRID(?::box3d, #{value.srid} ) " 
+                else
+                  "#{table_name}.#{connection.quote_column_name(attr)} && ? " 
                 end
-                "MBRIntersects(?, #{table_name}.#{connection.quote_column_name(attr)}) " 
               else
-
-                # Extract table name from qualified attribute names.
-                if attr.include?('.')
-                  table_name, attr = attr.split('.', 2)
-                  table_name = connection.quote_table_name(table_name)
-                end
+                attribute_condition("#{table_name}.#{connection.quote_column_name(attr)}", value)
               end
-              attribute_condition("#{table_name}.#{connection.quote_column_name(attr)}", value)
             else
               sanitize_sql_hash_for_conditions(value, connection.quote_table_name(attr.to_s))
             end

@@ -84,9 +84,9 @@ If you use fixtures for your unit tests, at some point, you will want to input a
     data: HELLO
     geom: <%= Point.from_x_y(123.5,321.9).to_yaml %>
 
-=== Find_by
+=== Find_by & Find_all_by
 
-find_by_[column] has been redefined when column is of a geometric type. Instead of using the Rails default '=' operator, for which I can't see a definition for MySql spatial datatypes and which performs a bounding box equality test in PostGIS, it uses a bounding box intersection: && in PostGIS and MBRIntersects in MySQL, which can both make use of a spatial index if one is present to speed up the queries. You could use this query, for example, if you need to display data from the database: You would want only the geometries which are in the screen rectangle and you could use a bounding box query for that. Since this is a common case, it is the default. You have 2 ways to use the find_by_[geom_column]: Either by passing a geometric object directly, or passing an array with the 2 opposite corners of a bounding box (with 2 or 3 coordinates depending of the dimension of the data).
+find_by_[column] has been redefined when column is of a geometric type. Instead of using the Rails default '=' operator, for which I can't see a definition for MySql spatial datatypes and which performs a bounding box equality test in PostGIS, it uses a bounding box intersection: && in PostGIS and MBRIntersects in MySQL, which can both make use of a spatial index if one is present to speed up the queries. You could use this query, for example, if you need to display data from the database: You would want only a single geometry which is in the screen rectangle and you could use a bounding box query for that. Since this is a common case, it is the default. You have 2 ways to use the find_by_[geom_column]: Either by passing a geometric object directly, or passing an array with the 2 opposite corners of a bounding box (with 2 or 3 coordinates depending of the dimension of the data).
 
   Park.find_by_geom(LineString.from_coordinates([[1.4,5.6],[2.7,8.9],[1.6,5.6]]))
 
@@ -97,6 +97,8 @@ or
 In PostGIS, since you can only use operations with geometries with the same SRID, you can add a third element representing the SRID of the bounding box to the array. It is by default set to -1:
 
   Park.find_by_geom([[3,5.6],[19.98,5.9],123])
+
+Find_all_by_[column] will return all records that occur within the bounding box or geometric object. Most useful for queries where you need to find all the geometric objects within a bounding box displayed on screen. 
 
 === Geometric data types
 

@@ -133,8 +133,7 @@ Ruby geometric datatypes are currently made available only through the GeoRuby l
 
 == TODO
 
-- Support of other geometric datatype libraries in addition to GeoRuby
-- Tutorials
+- See the project Issues page at http://github.com/fragility/spatial_adapter/issues for the current list of proposals, and to make your own.
 
 == License
 
@@ -142,4 +141,4 @@ The Spatial Adapter for Rails is released under the MIT license.
 
 == Support
 
-Any questions, enhancement proposals, bug notifications or corrections can be sent to mailto:guilhem.vellut+georuby@gmail.com.
+Any questions, enhancement proposals, bug notifications or corrections can be made via the project page at http://github.com/fragility/spatial_adapter

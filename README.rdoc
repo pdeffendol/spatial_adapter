@@ -77,12 +77,12 @@ For MySQL, it is slightly different since it does not support Z dimension or SRI
 
 === Fixtures
 
-If you use fixtures for your unit tests, at some point, you will want to input a geometry. You could transform your geometries to a form suitable for YAML yourself everytime but the spatial adapter provides a method to do it for you: +to_yaml+. It works for both MySQL and PostGIS (although the string returned is different for each database). You would use it like this, if the geometric column is a point:
+If you use fixtures for your unit tests, at some point, you will want to input a geometry. You could transform your geometries to a form suitable for YAML yourself everytime but the spatial adapter provides a method to do it for you: +to_fixture_format+. It works for both MySQL and PostGIS (although the string returned is different for each database). You would use it like this, if the geometric column is a point:
 
   fixture:
     id: 1
     data: HELLO
-    geom: <%= Point.from_x_y(123.5,321.9).to_yaml %>
+    geom: <%= Point.from_x_y(123.5,321.9).to_fixture_format %>
 
 === Find_by & Find_all_by
 

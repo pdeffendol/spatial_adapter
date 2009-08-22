@@ -55,7 +55,7 @@ ActiveRecord::SchemaDumper.class_eval do
         tbl.print ", :limit => #{column.limit.inspect}" if column.limit != @types[column.type][:limit] && column.precision.blank? && column.scale.blank?
         tbl.print ", :precision => #{column.precision.inspect}" if column.precision != @types[column.type][:precision]
         tbl.print ", :scale => #{column.scale.inspect}" if column.scale != @types[column.type][:scale] 
-        tbl.print ", :default => #{column.default.inspect}" if !column.default.nil?
+        tbl.print ", :default => #{default_string(column.default)}" if !column.default.nil?
         tbl.print ", :null => false" if !column.null
         tbl.puts
       end

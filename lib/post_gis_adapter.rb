@@ -165,8 +165,8 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
     
     yield table_definition
     
-    if options[:force]
-      drop_table(name) rescue nil
+    if options[:force] && table_exists?(name)
+      drop_table(name, options)
     end
     
     create_sql = "CREATE#{' TEMPORARY' if options[:temporary]} TABLE "

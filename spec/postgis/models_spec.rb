@@ -28,7 +28,7 @@ describe ActiveRecord::ConnectionAdapters::PostgreSQLAdapter do
     end
   
     it 'should save MultiPoint objects' do
-      model = MultiPolygonModel.new(:extra => 'test', :geom => GeometryFactory.multi_point)
+      model = MultiPointModel.new(:extra => 'test', :geom => GeometryFactory.multi_point)
       @connection.should_receive(:insert).with(Regexp.new(GeometryFactory.multi_point.as_hex_ewkb), anything(), anything(), anything(), anything())
       model.save.should == true
     end

@@ -9,7 +9,9 @@ ActiveRecord::Schema.define() do
     	extra varchar(255)
     );
     select AddGeometryColumn('point_models', 'geom', 4326, 'POINT', 2);
-
+    create index index_point_models_on_geom on point_models using gist (geom);
+    create index index_point_models_on_extra on point_models (extra);
+    
     drop table if exists line_string_models;
     create table line_string_models
     (

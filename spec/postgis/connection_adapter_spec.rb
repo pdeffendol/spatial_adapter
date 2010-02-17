@@ -132,4 +132,21 @@ describe ActiveRecord::ConnectionAdapters::PostgreSQLAdapter do
       @indexes.select{|i| i.columns.include?('extra')}.first.spatial.should == false
     end
   end  
+  
+  describe "#add_index" do
+    after :each do
+      @connection.should_receive(:execute).with(any_args())
+      @connection.remove_index('geometry_models', 'geom')
+    end
+    
+    it "should create a spatial index given :spatial => true" do
+      @connection.should_receive(:execute).with(/using gist/i)
+      @connection.add_index('geometry_models', 'geom', :spatial => true)
+    end
+    
+    it "should not create a spatial index unless specified" do
+      @connection.should_not_receive(:execute).with(/using gist/i)
+      @connection.add_index('geometry_models', 'extra')
+    end
+  end
 end

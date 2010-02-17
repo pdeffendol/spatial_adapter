@@ -15,12 +15,18 @@ The following gems are required:
 
 == Installation
 
+Choose ONE of the following installation methods.  You shouldn't have to do both.
+
 === From RubyGems
 
 This is the preferred method of installation, and will pull in the required
 dependencies as well.
 
   gem install spatial_adapter
+  
+In your Rails app, you can add a gem dependency in environment.rb:
+
+  config.gem "spatial_adapter"
   
 === As a Rails Plugin
 

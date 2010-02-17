@@ -7,11 +7,16 @@ require 'spatial_adapter'
 
 include GeoRuby::SimpleFeatures
 
+# Don't output migration logging
+ActiveRecord::Migration.verbose = false
+
 def postgis_connection
   ActiveRecord::Base.establish_connection(
     :adapter => 'postgresql',
     :database => 'spatial_adapter'
   )
+  # Turn off those annoying NOTICE messages
+  ActiveRecord::Base.connection.execute 'set client_min_messages = warning'
 end
 
 class GeometryFactory

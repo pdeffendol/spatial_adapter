@@ -1,10 +1,6 @@
 require 'geo_ruby'
 require 'active_record'
 
-require 'spatial_adapter/raw_geom_info'
-require 'spatial_adapter/common/schema_definitions'
-require 'spatial_adapter/postgis'
-
 module SpatialAdapter
   #Translation of geometric data types
   def geometry_data_types
@@ -20,3 +16,10 @@ module SpatialAdapter
     }
   end
 end
+
+require 'spatial_adapter/raw_geom_info'
+require 'spatial_adapter/spatial_column'
+require 'spatial_adapter/schema_definitions'
+require 'spatial_adapter/postgis/connection_adapter'
+require 'spatial_adapter/postgis/spatial_column'
+require 'spatial_adapter/postgis/schema_definitions'

@@ -2,7 +2,7 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 require 'db/postgis_raw'
 require 'models/postgis'
 
-describe ActiveRecord::ConnectionAdapters::PostgreSQLAdapter do
+describe "Modified PostgreSQLAdapter" do
   before :each do
     postgis_connection
     @connection = ActiveRecord::Base.connection

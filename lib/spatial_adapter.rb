@@ -20,6 +20,7 @@ end
 require 'spatial_adapter/raw_geom_info'
 require 'spatial_adapter/spatial_column'
 require 'spatial_adapter/schema_definitions'
+require 'spatial_adapter/schema_dumper'
 require 'spatial_adapter/postgis/connection_adapter'
 require 'spatial_adapter/postgis/spatial_column'
 require 'spatial_adapter/postgis/schema_definitions'

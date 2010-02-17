@@ -3,19 +3,19 @@
 This is the Spatial Adapter for ActiveRecord.  It enhances ActiveRecord to
 handle spatial datatypes in the following databases:
 
- - PostgreSQL (using PostGIS)
- - MySQL (using Spatial Extensions)
+- PostgreSQL (using PostGIS)
+- MySQL (using Spatial Extensions)
 
 == Dependencies
 
 The following gems are required:
 
- - GeoRuby
- - ActiveRecord (version 2.2.2 and up)
+- GeoRuby
+- ActiveRecord (version 2.2.2 and up)
 
 For PostgreSQL:
 
- - PostGIS version 1.4.0 or higher should be installed in your database
+- PostGIS version 1.4.0 or higher should be installed in your database
  
 == Installation
 
@@ -176,15 +176,6 @@ of EWKB.
     the_geom = place.the_geom
     the_geom.y=123456.7
     place.the_geom = the_geom
-
-== Changes since last version
-
-- The PostGIS adapter and the MySql Spatial adapter have been merged into one plugin. The correct files to load is determined using the type of connection defined in the environment.
-- Geometric columns can now be dumped just like other base data types. This means you can use the ruby schema mode, even if you use the plugin.
-- Support of M dimensions in migrations. The <tt>:dimension</tt> key in the column definition has disappeared and has been replaced by <tt>:with_z</tt> and <tt>:with_m</tt>.
-- Addition of unit tests. At the plugin root, Run <tt>rake test:mysql</tt> to run the mysql tests and <tt>rake test:postgis</tt> for the postgis ones. You will need to configure your connection in <tt>test/db/database_mysql.yml</tt> and <tt>test/db/database_postgis.yml</tt>. If you get errors on your platform, please report to mailto:guilhem.vellut+georuby@gmail.com.
-- Addition of a find_by methods with a special behaviour for geometries
-- Addition of a to_yaml method to use inside a YAML fixture
 
 == License
 

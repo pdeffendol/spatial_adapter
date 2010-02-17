@@ -13,6 +13,10 @@ The following gems are required:
  - GeoRuby
  - ActiveRecord (version 2.2.2 and up)
 
+For PostgreSQL:
+
+ - PostGIS version 1.4.0 or higher should be installed in your database
+ 
 == Installation
 
 Choose ONE of the following installation methods.  You shouldn't have to do both.

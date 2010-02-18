@@ -71,14 +71,15 @@ Here is a related statement valid for MySql version <= 5.0.16:
     add_index :table_points, :geom, :spatial => true
   end
   
-=== Differences etween Databases
+=== Differences Between Databases
 
-- On all versions of MySQL, the :srid and :with_z options are ignored, since
+- On all versions of MySQL, the :srid, :with_z, and :with_m options are ignored, since
   they are not supported. 
   
 - On MySQL versions <= 5.0.16, you have to add <tt>:options =>
   "ENGINE=MyISAM"</tt> to the create_table statement, since only MyISAM tables
-  can have spatial columns.
+  can have spatial columns.  In addition, only MyISAM tables may have spatial
+  indexes.
 
 === Models
 
@@ -115,49 +116,18 @@ point:
 
 === Finder Enhancements
 
-find_by_[column] has been redefined when column is of a geometric type.
-Instead of using the Rails default '=' operator, for which I can't see a
-definition for MySql spatial datatypes and which performs a bounding box
-equality test in PostGIS, it uses a bounding box intersection: && in PostGIS
-and MBRIntersects in MySQL, which can both make use of a spatial index if one
-is present to speed up the queries. You could use this query, for example, if
-you need to display data from the database: You would want only a single
-geometry which is in the screen rectangle and you could use a bounding box
-query for that. Since this is a common case, it is the default. You have 2
-ways to use the find_by_[geom_column]: Either by passing a geometric object
-directly, or passing an array with the 2 opposite corners of a bounding box
-(with 2 or 3 coordinates depending of the dimension of the data).
-
-  Park.find_by_geom(LineString.from_coordinates([[1.4,5.6],[2.7,8.9],[1.6,5.6]]))
-
-or
-
-  Park.find_by_geom([[3,5.6],[19.98,5.9]])
-
-In PostGIS, since you can only use operations with geometries with the same
-SRID, you can add a third element representing the SRID of the bounding box to
-the array. It is by default set to -1:
-
-  Park.find_by_geom([[3,5.6],[19.98,5.9],123])
-
-Find_all_by_[column] will return all records that occur within the bounding
-box or geometric object. Most useful for queries where you need to find all
-the geometric objects within a bounding box displayed on screen.
+Enhancements to find_by_* and friends has been removed from this version of
+Spatial Adapter until a cleaner implementation can be made.  (The previous
+implementation made adapter-specific modifications to ActiveRecord::Base,
+which prevented multiple adapters from being loaded at once.)
 
 === Geometric data types
 
 Ruby geometric datatypes are currently made available only through the GeoRuby
 library (http://georuby.rubyforge.org/): This is where the
-<tt>Point.from_x_y</tt> in the example above comes from. It is a goal of a
-future release of the Spatial Adapter to support additional geometric datatype
-libraries, such as Ruby/GEOS, as long as they can support reading and writing
-of EWKB.
+<tt>Point.from_x_y</tt> in the example above comes from.
 
 == Warning
-
-- If you use a version of MySQL before 5.0.16, only tables using the MyISAM
-  engine can support geometric columns. After MySQL 5.0.16, any engine
-  (incuding INNODB) is supported.
 
 - Since ActiveRecord seems to keep only the string values directly returned
   from the database, it translates from these to the correct types everytime
@@ -169,7 +139,7 @@ of EWKB.
     place = Place.find_first
     place.the_geom.y=123456.7 # this doesn't work
  
-  Since the translation to a geometry is performed everytime the_geom is read,
+  Since the translation to a geometry is performed every time the_geom is read,
   the change to y will not be saved! You would have to do something like this:
 
     place = Place.find_first

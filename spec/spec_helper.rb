@@ -19,6 +19,15 @@ def postgis_connection
   ActiveRecord::Base.connection.execute 'set client_min_messages = warning'
 end
 
+def mysql_connection
+  ActiveRecord::Base.establish_connection(
+    :adapter => 'mysql',
+    :database => 'spatial_adapter',
+    :username => 'root',
+    :host => 'localhost'
+  )
+end
+
 class GeometryFactory
   class << self
     def point

@@ -1,7 +1,5 @@
 require 'active_record/connection_adapters/postgresql_adapter'
 
-include SpatialAdapter
-
 module ActiveRecord
   module ConnectionAdapters
     class PostgreSQLTableDefinition < TableDefinition
@@ -22,18 +20,7 @@ module ActiveRecord
         else
           super(name, type, options)
         end
-      end
-      
-      SpatialAdapter.geometry_data_types.keys.each do |column_type|
-        class_eval <<-EOV
-          def #{column_type}(*args)
-            options = args.extract_options!
-            column_names = args
-            
-            column_names.each { |name| column(name, '#{column_type}', options) }
-          end
-        EOV
-      end      
+      end    
     end
 
     class PostgreSQLColumnDefinition < ColumnDefinition

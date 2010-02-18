@@ -43,11 +43,11 @@ class GeometryFactory
     end
     
     def multi_point
-      MultiPoint.from_coordinates([[12.4,-123.3],[-65.1,123.4],[123.55555555,123]], 4326)
+      MultiPoint.from_coordinates([[12.4,-23.3],[-65.1,23.4],[23.55555555,23]], 4326)
     end
     
     def multi_line_string
-      MultiLineString.from_line_strings([LineString.from_coordinates([[1.5,45.2],[-54.12312,-0.012]]),LineString.from_coordinates([[1.5,45.2],[-54.12312,-0.012],[45.123,123.3]])], 4326)
+      MultiLineString.from_line_strings([LineString.from_coordinates([[1.5,45.2],[-54.12312,-0.012]]),LineString.from_coordinates([[1.5,45.2],[-54.12312,-0.012],[45.123,23.3]])], 4326)
     end
     
     def multi_polygon

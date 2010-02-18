@@ -1,6 +1,6 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 require 'db/postgis_raw'
-require 'models/postgis'
+require 'models/common'
 
 describe "Spatially-enabled Models" do
   before :each do

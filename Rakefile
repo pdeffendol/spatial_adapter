@@ -3,8 +3,11 @@ require 'rubygems'
 require 'spec/rake/spectask'
 require 'jeweler'
 
-Spec::Rake::SpecTask.new do |t|
-  t.spec_files = FileList['spec/**/*_spec.rb']
+[:mysql, :postgis].each do |adapter|
+  desc "Run specs for #{adapter} adapter"
+  Spec::Rake::SpecTask.new("spec:#{adapter.to_s}") do |t|
+    t.spec_files = FileList["spec/#{adapter}/*_spec.rb"]
+  end
 end
 
 Jeweler::Tasks.new do |gem|
@@ -15,7 +18,6 @@ Jeweler::Tasks.new do |gem|
   gem.email = "pete@fragility.us"
   gem.homepage = "http://github.com/fragility/spatial_adapter"
     
-  # s.rubyforge_project = "thinking-sphinx"
   gem.files = FileList[
     "rails/*.rb",
     "lib/**/*.rb",

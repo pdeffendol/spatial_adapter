@@ -27,7 +27,7 @@ describe "Spatially-enabled Schema Dumps" do
   
   after :all do
     # delete the schema file
-    #File.delete('schema.rb')
+    File.delete('schema.rb')
 
     # Drop the new table
     @connection.drop_table "migrated_geometry_models"

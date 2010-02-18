@@ -174,7 +174,22 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
     indexes
   end
 
+  def disable_referential_integrity(&block) #:nodoc:
+    if supports_disable_referential_integrity?() then
+      execute(tables_without_postgis.collect { |name| "ALTER TABLE #{quote_table_name(name)} DISABLE TRIGGER ALL" }.join(";"))
+    end
+    yield
+  ensure
+    if supports_disable_referential_integrity?() then
+      execute(tables_without_postgis.collect { |name| "ALTER TABLE #{quote_table_name(name)} ENABLE TRIGGER ALL" }.join(";"))
+    end
+  end
+
   private
+  
+  def tables_without_postgis
+    tables - %w{ geometry_columns spatial_ref_sys }
+  end
   
   def column_spatial_info(table_name)
     constr = query("SELECT * FROM geometry_columns WHERE f_table_name = '#{table_name}'")

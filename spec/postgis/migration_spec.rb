@@ -33,6 +33,24 @@ describe "Spatially-enabled Migrations" do
       end
     end
     
+      it "should create #{type.to_s} geography columns" do
+        ActiveRecord::Schema.define do
+          create_table :migrated_geometry_models, :force => true do |t|
+            t.integer :extra
+            t.send(type, :geom, :geography => true)
+          end
+        end
+
+        geom_column = @connection.columns(:migrated_geometry_models).select{|c| c.name == 'geom'}.first
+        geom_column.should be_a(SpatialAdapter::SpatialColumn)
+        geom_column.geometry_type.should == type
+        geom_column.type.should == :geography
+        geom_column.with_z.should == false
+        geom_column.with_m.should == false
+        geom_column.srid.should == -1
+      end
+    end
+    
     it "should create 3d (xyz) geometry columns" do
       ActiveRecord::Schema.define do
         create_table :migrated_geometry_models, :force => true do |t|

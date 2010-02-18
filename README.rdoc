@@ -151,6 +151,27 @@ library (http://georuby.rubyforge.org/): This is where the
 
 The Spatial Adapter for ActiveRecord is released under the MIT license.
 
+== Latest Changes
+
+Spatial Adapter has been refactored and is now available as a Ruby gem. The
+dependency on Rails has been removed. Unfortunately, the current version is
+without some of the previous functionality, until a cleaner implementation is
+made.
+
+The previous release is available on the "legacy" branch.
+
+=== Removed Features in 0.2.0
+
+- Compatibility with ActiveRecord/Rails older than version 2.2.2
+- enhancements to find_by_* for spatial columns
+- to_fixture_format extension to the GeoRuby types
+
+These will hopefully be added back in the near future.
+
+== TODO
+
+- Add support for PostGIS geography types (in PostGIS 1.5.0+)
+
 == Support
 
 Any questions, enhancement proposals, bug notifications or corrections can be

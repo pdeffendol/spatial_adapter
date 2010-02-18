@@ -30,3 +30,5 @@ Jeweler::Tasks.new do |gem|
   gem.add_dependency 'activerecord', '>= 2.2.2'
   gem.add_dependency 'GeoRuby', '>= 1.3.0'
 end
+
+Jeweler::GemcutterTasks.new

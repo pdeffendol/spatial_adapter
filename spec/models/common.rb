@@ -30,3 +30,36 @@ end
 
 class Point4Model < ActiveRecord::Base
 end
+
+class GeographyPointModel < ActiveRecord::Base
+end
+
+class GeographyLineStringModel < ActiveRecord::Base
+end
+
+class GeographyPolygonModel < ActiveRecord::Base
+end
+
+class GeographyMultiPointModel < ActiveRecord::Base
+end
+
+class GeographyMultiLineStringModel < ActiveRecord::Base
+end
+
+class GeographyMultiPolygonModel < ActiveRecord::Base
+end
+
+class GeographyGeometryCollectionModel < ActiveRecord::Base
+end
+
+class GeographyModel < ActiveRecord::Base
+end
+
+class GeographyPointzModel < ActiveRecord::Base
+end
+
+class GeographyPointmModel < ActiveRecord::Base
+end
+
+class GeographyPoint4Model < ActiveRecord::Base
+end

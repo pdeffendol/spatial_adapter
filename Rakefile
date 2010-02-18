@@ -26,7 +26,8 @@ Jeweler::Tasks.new do |gem|
     "VERSION"
   ]
   gem.test_files = FileList[
-    "spec/**/*_spec.rb"
+    "spec/**/*.rb",
+    "spec/README.txt"
   ]
   
   gem.add_dependency 'activerecord', '>= 2.2.2'

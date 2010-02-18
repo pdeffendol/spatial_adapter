@@ -24,6 +24,13 @@ ActiveRecord::SchemaDumper.class_eval do
       else
         tbl.print ", :id => false"
       end
+      
+      # Added by Spatial Adapter to ensure correct MySQL table engine
+      if @connection.respond_to?(:options_for)
+        res = @connection.options_for(table)
+        tbl.print ", :options=>'#{res}'" if res
+      end
+      
       tbl.print ", :force => true"
       tbl.puts " do |t|"
 

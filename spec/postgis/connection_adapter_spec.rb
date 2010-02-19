@@ -56,20 +56,20 @@ describe "Modified PostgreSQLAdapter" do
     end
   end
   
-  describe '#supports_geography?' do
+  describe '#supports_geographic?' do
     it "should be true for PostGIS version 1.5.0" do
       @connection.stub!(:postgis_version).and_return('1.5.0')
-      @connection.supports_geography?.should == true
+      @connection.supports_geographic?.should == true
     end
     
     it "should be true for PostGIS newer than 1.5.0" do
       @connection.stub!(:postgis_version).and_return('1.5.1')
-      @connection.supports_geography?.should == true
+      @connection.supports_geographic?.should == true
     end
     
     it "should be true for PostGIS older than 1.5.0" do
       @connection.stub!(:postgis_version).and_return('1.4.0')
-      @connection.supports_geography?.should == false
+      @connection.supports_geographic?.should == false
     end
   end
 

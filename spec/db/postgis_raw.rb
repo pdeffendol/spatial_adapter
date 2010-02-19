@@ -94,7 +94,7 @@ ActiveRecord::Schema.define() do
     select AddGeometryColumn('point4_models', 'geom', 4326, 'POINT', 4);
   SQL
   
-  if ActiveRecord::Base.connection.supports_geography?
+  if ActiveRecord::Base.connection.supports_geographic?
     execute <<-SQL
       drop table if exists geography_point_models;
       create table geography_point_models

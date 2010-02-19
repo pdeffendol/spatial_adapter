@@ -25,7 +25,7 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
     !postgis_version.nil?
   end
   
-  def supports_geography?
+  def supports_geographic?
     postgis_major_version > 1 || (postgis_major_version == 1 && postgis_minor_version >= 5)
   end
   

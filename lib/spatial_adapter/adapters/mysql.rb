@@ -3,7 +3,7 @@ require 'active_record/connection_adapters/mysql_adapter'
 ActiveRecord::ConnectionAdapters::MysqlAdapter.class_eval do
   include SpatialAdapter
 
-  def supports_geography?
+  def supports_geographic?
     false
   end
   

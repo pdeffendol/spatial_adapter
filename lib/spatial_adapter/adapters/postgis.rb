@@ -134,7 +134,7 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
   def indexes(table_name, name = nil)
     schemas = schema_search_path.split(/,/).map { |p| quote(p) }.join(',')
     result = query(<<-SQL, name)
-    SELECT i.relname, d.indisunique, d.indkey, t.oid, am.amname
+    SELECT distinct i.relname, d.indisunique, d.indkey, t.oid, am.amname
       FROM pg_class t, pg_class i, pg_index d, pg_attribute a, pg_am am
     WHERE i.relkind = 'i'
       AND d.indexrelid = i.oid

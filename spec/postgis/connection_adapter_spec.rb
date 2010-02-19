@@ -124,12 +124,24 @@ describe "Modified PostgreSQLAdapter" do
       @indexes = @connection.indexes('point_models', 'index_point_models_on_geom')
     end
     
+    it "should return an IndexDefinition for each index on the table" do
+      @indexes.should have(2).items
+      @indexes.each do |i|
+        i.should be_a(ActiveRecord::ConnectionAdapters::IndexDefinition)
+      end
+    end
+    
+    it "should indicate the correct columns in the index" do
+      @indexes.select{|i| i.name == 'index_point_models_on_geom'}.first.columns.should == ['geom']
+      @indexes.select{|i| i.name == 'index_point_models_on_extra'}.first.columns.should == ['extra', 'more_extra']
+    end
+    
     it "should be marked as spatial if a GIST index" do
-      @indexes.select{|i| i.columns.include?('geom')}.first.spatial.should == true
+      @indexes.select{|i| i.name == 'index_point_models_on_geom'}.first.spatial.should == true
     end
     
     it "should not be marked as spatial if not a GIST index" do
-      @indexes.select{|i| i.columns.include?('extra')}.first.spatial.should == false
+      @indexes.select{|i| i.name == 'index_point_models_on_extra'}.first.spatial.should == false
     end
   end  
   

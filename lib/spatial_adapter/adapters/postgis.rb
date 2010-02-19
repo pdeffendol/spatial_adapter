@@ -77,14 +77,15 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
     create_sql << "#{quote_table_name(table_name)} ("
     create_sql << table_definition.to_sql
     create_sql << ") #{options[:options]}"
-    execute create_sql
 
     # This is the additional portion for PostGIS
     unless table_definition.geom_columns.nil?
       table_definition.geom_columns.each do |geom_column|
-        execute geom_column.to_sql(table_name)
+        create_sql << "; " + geom_column.to_sql(table_name)
       end
     end
+
+    execute create_sql
   end
 
   alias :original_remove_column :remove_column

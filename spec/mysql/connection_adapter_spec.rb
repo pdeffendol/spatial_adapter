@@ -8,9 +8,9 @@ describe "Modified MysqlAdapter" do
     @connection = ActiveRecord::Base.connection
   end
   
-  describe '#supports_geography?' do
+  describe '#supports_geographic?' do
     it "should be false" do
-      @connection.supports_geography?.should == false
+      @connection.supports_geographic?.should == false
     end
   end
 

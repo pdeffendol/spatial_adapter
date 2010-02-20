@@ -3,7 +3,7 @@ require 'active_record/connection_adapters/mysql_adapter'
 ActiveRecord::ConnectionAdapters::MysqlAdapter.class_eval do
   include SpatialAdapter
 
-  def supports_geography?
+  def supports_geographic?
     false
   end
   
@@ -28,12 +28,8 @@ ActiveRecord::ConnectionAdapters::MysqlAdapter.class_eval do
     columns = []
     result = execute(sql, name)
     result.each do |field|
-      if field[1] =~ /geometry|point|linestring|polygon|multipoint|multilinestring|multipolygon|geometrycollection/i
-        #to note that the column is spatial
-        columns << ActiveRecord::ConnectionAdapters::SpatialMysqlColumn.new(field[0], field[4], field[1], field[2] == "YES")
-      else
-        columns << ActiveRecord::ConnectionAdapters::MysqlColumn.new(field[0], field[4], field[1], field[2] == "YES")
-      end
+      klass = field[1] =~ /geometry|point|linestring|polygon|multipoint|multilinestring|multipolygon|geometrycollection/i ? ActiveRecord::ConnectionAdapters::SpatialMysqlColumn : ActiveRecord::ConnectionAdapters::MysqlColumn
+      columns << klass.new(field[0], field[4], field[1], field[2] == "YES")
     end
     result.free
     columns

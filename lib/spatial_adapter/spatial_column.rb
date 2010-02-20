@@ -1,8 +1,8 @@
 module SpatialAdapter
   module SpatialColumn
-    attr_reader  :spatial, :geometry_type, :srid, :with_z, :with_m
+    attr_reader  :geometry_type, :srid, :with_z, :with_m
 
-    def initialize(name, default, sql_type = nil, null = true,srid=-1,with_z=false,with_m=false)
+    def initialize(name, default, sql_type = nil, null = true, srid=-1, with_z=false, with_m=false)
       super(name, default, sql_type, null)
       @geometry_type = geometry_simplified_type(@sql_type)
       @srid = srid
@@ -10,6 +10,10 @@ module SpatialAdapter
       @with_m = with_m
     end
   
+    def geographic?
+      false
+    end
+
     # Redefines type_cast to add support for geometries
     # alias_method :type_cast_without_spatial, :type_cast
     def type_cast(value)
@@ -43,17 +47,17 @@ module SpatialAdapter
 
     private
 
-    #Redefines the simplified_type method to add behabiour for when a column is of type geometry
+    #Redefines the simplified_type method to spatial columns
     def simplified_type(field_type)
       case field_type
-      when /geometry|point|linestring|polygon|multipoint|multilinestring|multipolygon|geometrycollection/i then :geometry
+      when /geography|geometry|point|linestring|polygon|multipoint|multilinestring|multipolygon|geometrycollection/i then :geometry
       else super
       end
     end
 
-    #less simlpified geometric type to be use in migrations
-    def geometry_simplified_type(field_type)
-      case field_type
+    # less simlpified geometric type to be use in migrations
+    def geometry_simplified_type(sql_type)
+      case sql_type
       when /^point$/i then :point
       when /^linestring$/i then :line_string
       when /^polygon$/i then :polygon

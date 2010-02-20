@@ -2,7 +2,7 @@ ActiveRecord::SchemaDumper.ignore_tables << "spatial_ref_sys" << "geometry_colum
 
 ActiveRecord::SchemaDumper.class_eval do
   # These are the valid options for a column specification (spatial options added)
-  VALID_COLUMN_SPEC_KEYS = [:name, :limit, :precision, :scale, :default, :null, :srid, :with_z, :with_m]
+  VALID_COLUMN_SPEC_KEYS = [:name, :limit, :precision, :scale, :default, :null, :srid, :with_z, :with_m, :geographic]
   
   def table(table, stream)
     columns = @connection.columns(table)
@@ -129,6 +129,7 @@ ActiveRecord::SchemaDumper.class_eval do
       spec[:srid]    = column.srid.inspect if column.srid != -1
       spec[:with_z]  = 'true' if column.with_z
       spec[:with_m]  = 'true' if column.with_m
+      spec[:geographic] = 'true' if column.geographic?
     end
     spec
   end

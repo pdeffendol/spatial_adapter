@@ -56,27 +56,39 @@ describe "Modified PostgreSQLAdapter" do
     end
   end
   
-  describe '#supports_geography?' do
+  describe '#supports_geographic?' do
     it "should be true for PostGIS version 1.5.0" do
       @connection.stub!(:postgis_version).and_return('1.5.0')
-      @connection.supports_geography?.should == true
+      @connection.supports_geographic?.should == true
     end
     
     it "should be true for PostGIS newer than 1.5.0" do
       @connection.stub!(:postgis_version).and_return('1.5.1')
-      @connection.supports_geography?.should == true
+      @connection.supports_geographic?.should == true
     end
     
     it "should be true for PostGIS older than 1.5.0" do
       @connection.stub!(:postgis_version).and_return('1.4.0')
-      @connection.supports_geography?.should == false
+      @connection.supports_geographic?.should == false
     end
   end
 
   describe "#columns" do
     describe "type" do
-      it "should be SpatialPostgreSQLColumn if column is a spatial data type" do
-        PointModel.columns.select{|c| c.name == 'geom'}.first.should be_a(ActiveRecord::ConnectionAdapters::SpatialPostgreSQLColumn)
+      it "should be a regular SpatialPostgreSQLColumn if column is a geometry data type" do
+        column = PointModel.columns.select{|c| c.name == 'geom'}.first
+        column.should be_a(ActiveRecord::ConnectionAdapters::SpatialPostgreSQLColumn)
+        column.type.should == :geometry
+        column.geometry_type.should == :point
+        column.should_not be_geographic
+      end
+      
+      it "should be a geographic SpatialPostgreSQLColumn if column is a geography data type" do
+        column = GeographyPointModel.columns.select{|c| c.name == 'geom'}.first
+        column.should be_a(ActiveRecord::ConnectionAdapters::SpatialPostgreSQLColumn)
+        column.type.should == :geometry
+        column.geometry_type.should == :point
+        column.should be_geographic
       end
       
       it "should be PostgreSQLColumn if column is not a spatial data type" do
@@ -85,36 +97,68 @@ describe "Modified PostgreSQLAdapter" do
     end
     
     describe "@geometry_type" do
-      it "should be :point for columns restricted to POINT types" do
+      it "should be :point for geometry columns restricted to POINT types" do
         PointModel.columns.select{|c| c.name == 'geom'}.first.geometry_type.should == :point
       end
       
-      it "should be :line_string for columns restricted to LINESTRING types" do
+      it "should be :line_string for geometry columns restricted to LINESTRING types" do
         LineStringModel.columns.select{|c| c.name == 'geom'}.first.geometry_type.should == :line_string
       end
 
-      it "should be :polygon for columns restricted to POLYGON types" do
+      it "should be :polygon for geometry columns restricted to POLYGON types" do
         PolygonModel.columns.select{|c| c.name == 'geom'}.first.geometry_type.should == :polygon
       end
 
-      it "should be :multi_point for columns restricted to MULTIPOINT types" do
+      it "should be :multi_point for geometry columns restricted to MULTIPOINT types" do
         MultiPointModel.columns.select{|c| c.name == 'geom'}.first.geometry_type.should == :multi_point
       end
 
-      it "should be :multi_line_string for columns restricted to MULTILINESTRING types" do
+      it "should be :multi_line_string for geometry columns restricted to MULTILINESTRING types" do
         MultiLineStringModel.columns.select{|c| c.name == 'geom'}.first.geometry_type.should == :multi_line_string
       end
       
-      it "should be :multi_polygon for columns restricted to MULTIPOLYGON types" do
+      it "should be :multi_polygon for geometry columns restricted to MULTIPOLYGON types" do
         MultiPolygonModel.columns.select{|c| c.name == 'geom'}.first.geometry_type.should == :multi_polygon
       end
       
-      it "should be :geometry_collection for columns restricted to GEOMETRYCOLLECTION types" do
+      it "should be :geometry_collection for geometry columns restricted to GEOMETRYCOLLECTION types" do
         GeometryCollectionModel.columns.select{|c| c.name == 'geom'}.first.geometry_type.should == :geometry_collection
       end
       
-      it "should be :geometry for columns not restricted to a type" do
+      it "should be :geometry for geometry columns not restricted to a type" do
         GeometryModel.columns.select{|c| c.name == 'geom'}.first.geometry_type.should == :geometry
+      end
+      
+      it "should be :point for geography columns restricted to POINT types" do
+        GeographyPointModel.columns.select{|c| c.name == 'geom'}.first.geometry_type.should == :point
+      end
+      
+      it "should be :line_string for geography columns restricted to LINESTRING types" do
+        GeographyLineStringModel.columns.select{|c| c.name == 'geom'}.first.geometry_type.should == :line_string
+      end
+
+      it "should be :polygon for geography columns restricted to POLYGON types" do
+        GeographyPolygonModel.columns.select{|c| c.name == 'geom'}.first.geometry_type.should == :polygon
+      end
+
+      it "should be :multi_point for geography columns restricted to MULTIPOINT types" do
+        GeographyMultiPointModel.columns.select{|c| c.name == 'geom'}.first.geometry_type.should == :multi_point
+      end
+
+      it "should be :multi_line_string for geography columns restricted to MULTILINESTRING types" do
+        GeographyMultiLineStringModel.columns.select{|c| c.name == 'geom'}.first.geometry_type.should == :multi_line_string
+      end
+      
+      it "should be :multi_polygon for geography columns restricted to MULTIPOLYGON types" do
+        GeographyMultiPolygonModel.columns.select{|c| c.name == 'geom'}.first.geometry_type.should == :multi_polygon
+      end
+      
+      it "should be :geometry_collection for geography columns restricted to GEOMETRYCOLLECTION types" do
+        GeographyGeometryCollectionModel.columns.select{|c| c.name == 'geom'}.first.geometry_type.should == :geometry_collection
+      end
+      
+      it "should be :geometry for geography columns not restricted to a type" do
+        GeographyModel.columns.select{|c| c.name == 'geom'}.first.geometry_type.should == :geometry
       end
     end
   end

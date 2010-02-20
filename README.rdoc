@@ -168,10 +168,6 @@ The previous release is available on the "legacy" branch.
 
 These will hopefully be added back in the near future.
 
-== TODO
-
-- Add support for PostGIS geography types (in PostGIS 1.5.0+)
-
 == Support
 
 Any questions, enhancement proposals, bug notifications or corrections can be

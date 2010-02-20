@@ -75,16 +75,20 @@ describe "Modified PostgreSQLAdapter" do
 
   describe "#columns" do
     describe "type" do
-      it "should be a geometry SpatialPostgreSQLColumn if column is a geometry data type" do
+      it "should be a regular SpatialPostgreSQLColumn if column is a geometry data type" do
         column = PointModel.columns.select{|c| c.name == 'geom'}.first
         column.should be_a(ActiveRecord::ConnectionAdapters::SpatialPostgreSQLColumn)
         column.type.should == :geometry
+        column.geometry_type.should == :point
+        column.should_not be_geographic
       end
       
-      it "should be a geography SpatialPostgreSQLColumn if column is a geography data type" do
+      it "should be a geographic SpatialPostgreSQLColumn if column is a geography data type" do
         column = GeographyPointModel.columns.select{|c| c.name == 'geom'}.first
         column.should be_a(ActiveRecord::ConnectionAdapters::SpatialPostgreSQLColumn)
-        column.type.should == :geography
+        column.type.should == :geometry
+        column.geometry_type.should == :point
+        column.should be_geographic
       end
       
       it "should be PostgreSQLColumn if column is not a spatial data type" do
@@ -153,8 +157,8 @@ describe "Modified PostgreSQLAdapter" do
         GeographyGeometryCollectionModel.columns.select{|c| c.name == 'geom'}.first.geometry_type.should == :geometry_collection
       end
       
-      it "should be :geography for geography columns not restricted to a type" do
-        GeographyModel.columns.select{|c| c.name == 'geom'}.first.geometry_type.should == :geography
+      it "should be :geometry for geography columns not restricted to a type" do
+        GeographyModel.columns.select{|c| c.name == 'geom'}.first.geometry_type.should == :geometry
       end
     end
   end

@@ -10,6 +10,10 @@ module SpatialAdapter
       @with_m = with_m
     end
   
+    def geographic?
+      false
+    end
+
     # Redefines type_cast to add support for geometries
     # alias_method :type_cast_without_spatial, :type_cast
     def type_cast(value)

@@ -1,6 +1,8 @@
 require 'geo_ruby'
 require 'active_record'
 
+include GeoRuby::SimpleFeatures
+
 module SpatialAdapter
   #Translation of geometric data types
   def geometry_data_types

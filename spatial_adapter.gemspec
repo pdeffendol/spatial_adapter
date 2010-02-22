@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{spatial_adapter}
-  s.version = "0.3.0"
+  s.version = "0.3.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Pete Deffendol"]
-  s.date = %q{2010-02-19}
+  s.date = %q{2010-02-22}
   s.description = %q{Provides enhancements to ActiveRecord to handle spatial datatypes in PostgreSQL and MySQL.}
   s.email = %q{pete@fragility.us}
   s.extra_rdoc_files = [

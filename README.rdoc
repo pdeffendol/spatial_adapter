@@ -28,7 +28,7 @@ dependencies as well.
 
   gem install spatial_adapter
   
-In your Rails app, you can add a gem dependency in environment.rb:
+In a Rails app, you can add a gem dependency in environment.rb:
 
   config.gem "spatial_adapter"
   
@@ -39,6 +39,25 @@ In your Rails project, run the following:
 script/plugin install git://github.com/fragility/spatial_adapter.git
 
 You need to have Git installed first.
+
+== Configuration
+
+Choose the database type for which you would like to use spatial_adapter, and
+load each with
+
+  require 'spatial_adapter/[database]'
+  
+where [database] should be replaced with one of the following:
+
+- postgresql
+- mysql
+  
+For example to use the PostgreSQL spatial adapter:
+
+  require 'spatial_adapter/postgresql'
+  
+In a Rails app, spatial_adapter will automatically load the adapter for the database
+specified in your database.yml configuration.
 
 == Operations
 

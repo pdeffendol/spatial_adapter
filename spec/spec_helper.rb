@@ -1,9 +1,10 @@
 require 'rubygems'
 require 'spec'
+require 'geo_ruby'
 gem 'activerecord', '=2.3.5'
+require 'active_record'
 
 $:.unshift((File.join(File.dirname(__FILE__), '..', 'lib')))
-require 'spatial_adapter'
 
 include GeoRuby::SimpleFeatures
 

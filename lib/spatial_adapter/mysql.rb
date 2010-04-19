@@ -1,3 +1,4 @@
+require 'spatial_adapter'
 require 'active_record/connection_adapters/mysql_adapter'
 
 ActiveRecord::ConnectionAdapters::MysqlAdapter.class_eval do

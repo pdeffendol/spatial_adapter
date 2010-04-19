@@ -1,4 +1,5 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
+require 'spatial_adapter/postgresql'
 
 describe "Spatially-enabled Schema Dumps" do
   before :all do

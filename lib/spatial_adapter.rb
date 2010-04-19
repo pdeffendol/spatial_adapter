@@ -1,10 +1,21 @@
+# This file should typically not be directly require'd into your project. You
+# should require the database-specific adapter you desire, e.g.
+#
+#   require 'spatial_adapter/postgresql'
+#
+# Why is this file here?
+#
+# Mostly to keep Rails happy when using config.gem to specify dependencies.
+# The Rails init code (rails/init.rb) will then load the adapter that matches
+# your database.yml configuration.
+
 require 'geo_ruby'
 require 'active_record'
 
 include GeoRuby::SimpleFeatures
 
 module SpatialAdapter
-  #Translation of geometric data types
+  # Translation of geometric data types
   def geometry_data_types
     {
       :point => { :name => "POINT" },
@@ -19,10 +30,8 @@ module SpatialAdapter
   end
 end
 
-require 'spatial_adapter/raw_geom_info'
-require 'spatial_adapter/spatial_column'
-require 'spatial_adapter/schema_definitions'
-require 'spatial_adapter/schema_dumper'
-require 'spatial_adapter/table_definition'
-require 'spatial_adapter/adapters/postgis'
-require 'spatial_adapter/adapters/mysql'
+require 'spatial_adapter/common/raw_geom_info'
+require 'spatial_adapter/common/spatial_column'
+require 'spatial_adapter/common/schema_definitions'
+require 'spatial_adapter/common/schema_dumper'
+require 'spatial_adapter/common/table_definition'

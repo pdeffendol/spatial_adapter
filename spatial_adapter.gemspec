@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{spatial_adapter}
-  s.version = "0.3.1"
+  s.version = "1.0.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Pete Deffendol"]
-  s.date = %q{2010-02-22}
+  s.date = %q{2010-04-19}
   s.description = %q{Provides enhancements to ActiveRecord to handle spatial datatypes in PostgreSQL and MySQL.}
   s.email = %q{pete@fragility.us}
   s.extra_rdoc_files = [
@@ -20,19 +20,19 @@ Gem::Specification.new do |s|
      "README.rdoc",
      "VERSION",
      "lib/spatial_adapter.rb",
-     "lib/spatial_adapter/adapters/mysql.rb",
-     "lib/spatial_adapter/adapters/postgis.rb",
-     "lib/spatial_adapter/raw_geom_info.rb",
-     "lib/spatial_adapter/schema_definitions.rb",
-     "lib/spatial_adapter/schema_dumper.rb",
-     "lib/spatial_adapter/spatial_column.rb",
-     "lib/spatial_adapter/table_definition.rb",
+     "lib/spatial_adapter/common/raw_geom_info.rb",
+     "lib/spatial_adapter/common/schema_definitions.rb",
+     "lib/spatial_adapter/common/schema_dumper.rb",
+     "lib/spatial_adapter/common/spatial_column.rb",
+     "lib/spatial_adapter/common/table_definition.rb",
+     "lib/spatial_adapter/mysql.rb",
+     "lib/spatial_adapter/postgresql.rb",
      "rails/init.rb"
   ]
   s.homepage = %q{http://github.com/fragility/spatial_adapter}
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib"]
-  s.rubygems_version = %q{1.3.5}
+  s.rubygems_version = %q{1.3.6}
   s.summary = %q{Spatial Adapter for ActiveRecord}
   s.test_files = [
     "spec/db/mysql_raw.rb",
@@ -42,10 +42,10 @@ Gem::Specification.new do |s|
      "spec/mysql/migration_spec.rb",
      "spec/mysql/models_spec.rb",
      "spec/mysql/schema_dumper_spec.rb",
-     "spec/postgis/connection_adapter_spec.rb",
-     "spec/postgis/migration_spec.rb",
-     "spec/postgis/models_spec.rb",
-     "spec/postgis/schema_dumper_spec.rb",
+     "spec/postgresql/connection_adapter_spec.rb",
+     "spec/postgresql/migration_spec.rb",
+     "spec/postgresql/models_spec.rb",
+     "spec/postgresql/schema_dumper_spec.rb",
      "spec/spec_helper.rb",
      "spec/README.txt"
   ]

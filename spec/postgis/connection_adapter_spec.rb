@@ -1,4 +1,5 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
+
 require 'db/postgis_raw'
 require 'models/common'
 
@@ -165,7 +166,7 @@ describe "Modified PostgreSQLAdapter" do
   
   describe "#indexes" do
     before :each do
-      @indexes = @connection.indexes('point_models', 'index_point_models_on_geom')
+      @indexes = @connection.indexes('point_models')
     end
     
     it "should return an IndexDefinition for each index on the table" do
@@ -180,12 +181,32 @@ describe "Modified PostgreSQLAdapter" do
       @indexes.select{|i| i.name == 'index_point_models_on_extra'}.first.columns.should == ['extra', 'more_extra']
     end
     
-    it "should be marked as spatial if a GIST index" do
+    it "should be marked as spatial if a GiST index on a geometry column" do
       @indexes.select{|i| i.name == 'index_point_models_on_geom'}.first.spatial.should == true
     end
     
-    it "should not be marked as spatial if not a GIST index" do
+    it "should be marked as spatial if a GiST index on a geography column" do
+      @indexes = @connection.indexes('geography_point_models')
+      @indexes.select{|i| i.name == 'index_geography_point_models_on_geom'}.first.spatial.should == true
+    end
+    
+    it "should not be marked as spatial if not a GiST index" do
       @indexes.select{|i| i.name == 'index_point_models_on_extra'}.first.spatial.should == false
+    end
+    
+    it "should not be marked as spatial if a GiST index on a non-geometry column" do
+      @connection.execute(<<-SQL)
+        create table non_spatial_models
+        (
+          id serial primary key,
+          location point,
+          extra varchar(255)
+        );
+        create index index_non_spatial_models_on_location on non_spatial_models using gist (box(location, location));
+      SQL
+      @indexes = @connection.indexes('non_spatial_models')
+      @indexes.select{|i| i.name == 'index_non_spatial_models_on_location'}.first.spatial.should == false
+      @connection.execute 'drop table non_spatial_models'
     end
   end  
   

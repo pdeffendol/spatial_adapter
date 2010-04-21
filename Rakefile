@@ -2,7 +2,7 @@ $:.unshift(File.join(File.dirname(__FILE__) ,'../../gems/georuby/lib/'))
 require 'rubygems'
 require 'spec/rake/spectask'
 
-[:mysql, :postgis].each do |adapter|
+[:mysql, :postgresql].each do |adapter|
   desc "Run specs for #{adapter} adapter"
   Spec::Rake::SpecTask.new("spec:#{adapter.to_s}") do |t|
     t.spec_files = FileList["spec/#{adapter}/*_spec.rb"]

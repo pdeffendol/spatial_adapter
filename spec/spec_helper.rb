@@ -2,14 +2,13 @@ require 'rubygems'
 require 'spec'
 require 'geo_ruby'
 gem 'activerecord', '=2.3.5'
+#gem 'activerecord', '=3.0.0.beta3'
 require 'active_record'
 
 $:.unshift((File.join(File.dirname(__FILE__), '..', 'lib')))
 
 include GeoRuby::SimpleFeatures
 
-# Don't output migration logging
-ActiveRecord::Migration.verbose = false
 
 def postgis_connection
   ActiveRecord::Base.establish_connection(
@@ -18,6 +17,9 @@ def postgis_connection
   )
   # Turn off those annoying NOTICE messages
   ActiveRecord::Base.connection.execute 'set client_min_messages = warning'
+
+  # Don't output migration logging
+  ActiveRecord::Migration.verbose = false
 end
 
 def mysql_connection
@@ -27,6 +29,9 @@ def mysql_connection
     :username => 'root',
     :host => 'localhost'
   )
+  
+  # Don't output migration logging
+  ActiveRecord::Migration.verbose = false
 end
 
 class GeometryFactory

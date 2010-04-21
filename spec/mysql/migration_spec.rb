@@ -27,7 +27,7 @@ describe "Spatially-enabled Migrations" do
         geom_column = @connection.columns(:migrated_geometry_models).select{|c| c.name == 'geom'}.first
         geom_column.should be_a(SpatialAdapter::SpatialColumn)
         geom_column.geometry_type.should == type
-        geom_column.type.should == :geometry
+        geom_column.type.should == :string
       end
     end
   end
@@ -54,7 +54,7 @@ describe "Spatially-enabled Migrations" do
         geom_column = @connection.columns(:migrated_geometry_models).select{|c| c.name == 'geom'}.first
         geom_column.should be_a(SpatialAdapter::SpatialColumn)
         geom_column.geometry_type.should == type
-        geom_column.type.should == :geometry
+        geom_column.type.should == :string
         geom_column.with_z.should == false
         geom_column.with_m.should == false
         geom_column.srid.should == -1

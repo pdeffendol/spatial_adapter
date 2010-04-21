@@ -26,7 +26,7 @@ describe "Spatially-enabled Migrations" do
       
         geom_column = @connection.columns(:migrated_geometry_models).select{|c| c.name == 'geom'}.first
         geom_column.should be_a(SpatialAdapter::SpatialColumn)
-        geom_column.type.should == :geometry
+        geom_column.type.should == :string
         geom_column.geometry_type.should == type
         geom_column.should_not be_geographic
         geom_column.with_z.should == false
@@ -45,7 +45,7 @@ describe "Spatially-enabled Migrations" do
         geom_column = @connection.columns(:migrated_geometry_models).select{|c| c.name == 'geom'}.first
         
         geom_column.should be_a(SpatialAdapter::SpatialColumn)
-        geom_column.type.should == :geometry
+        geom_column.type.should == :string
         geom_column.geometry_type.should == type
         geom_column.should be_geographic
         geom_column.with_z.should == false
@@ -82,7 +82,7 @@ describe "Spatially-enabled Migrations" do
       geom_column = @connection.columns(:migrated_geometry_models).select{|c| c.name == 'geom'}.first
       geom_column.should be_a(SpatialAdapter::SpatialColumn)
       geom_column.geometry_type.should == :point
-      geom_column.type.should == :geometry
+      geom_column.type.should == :string
       geom_column.with_z.should == false
       geom_column.with_m.should == true
       geom_column.srid.should == -1
@@ -100,7 +100,7 @@ describe "Spatially-enabled Migrations" do
       geom_column = @connection.columns(:migrated_geometry_models).select{|c| c.name == 'geom'}.first
       geom_column.should be_a(SpatialAdapter::SpatialColumn)
       geom_column.geometry_type.should == :point
-      geom_column.type.should == :geometry
+      geom_column.type.should == :string
       geom_column.with_z.should == true
       geom_column.with_m.should == true
       geom_column.srid.should == -1
@@ -133,7 +133,7 @@ describe "Spatially-enabled Migrations" do
       geom_column = @connection.columns(:migrated_geometry_models).select{|c| c.name == 'geom'}.first
       geom_column.should be_a(SpatialAdapter::SpatialColumn)
       geom_column.geometry_type.should == :point
-      geom_column.type.should == :geometry
+      geom_column.type.should == :string
       geom_column.should be_geographic
       geom_column.with_z.should == false
       geom_column.with_m.should == true
@@ -152,7 +152,7 @@ describe "Spatially-enabled Migrations" do
       geom_column.should be_a(SpatialAdapter::SpatialColumn)
       geom_column.geometry_type.should == :point
       geom_column.should be_geographic
-      geom_column.type.should == :geometry
+      geom_column.type.should == :string
       geom_column.with_z.should == true
       geom_column.with_m.should == true
     end
@@ -168,7 +168,7 @@ describe "Spatially-enabled Migrations" do
     
       geom_column = @connection.columns(:migrated_geometry_models).select{|c| c.name == 'geom'}.first
       geom_column.should be_a(SpatialAdapter::SpatialColumn)
-      geom_column.type.should == :geometry
+      geom_column.type.should == :string
       geom_column.geometry_type.should == :geometry
       geom_column.with_z.should == false
       geom_column.with_m.should == false
@@ -197,7 +197,7 @@ describe "Spatially-enabled Migrations" do
   
         geom_column = @connection.columns(:migrated_geometry_models).select{|c| c.name == 'geom'}.first
         geom_column.should be_a(SpatialAdapter::SpatialColumn)
-        geom_column.type.should == :geometry
+        geom_column.type.should == :string
         geom_column.geometry_type.should == type
         geom_column.with_z.should == false
         geom_column.with_m.should == false
@@ -212,7 +212,7 @@ describe "Spatially-enabled Migrations" do
   
       geom_column = @connection.columns(:migrated_geometry_models).select{|c| c.name == 'geom'}.first
       geom_column.should be_a(SpatialAdapter::SpatialColumn)
-      geom_column.type.should == :geometry
+      geom_column.type.should == :string
       geom_column.geometry_type.should == :point
       geom_column.with_z.should == true
       geom_column.with_m.should == false
@@ -227,7 +227,7 @@ describe "Spatially-enabled Migrations" do
   
       geom_column = @connection.columns(:migrated_geometry_models).select{|c| c.name == 'geom'}.first
       geom_column.should be_a(SpatialAdapter::SpatialColumn)
-      geom_column.type.should == :geometry
+      geom_column.type.should == :string
       geom_column.geometry_type.should == :point
       geom_column.with_z.should == false
       geom_column.with_m.should == true
@@ -242,7 +242,7 @@ describe "Spatially-enabled Migrations" do
   
       geom_column = @connection.columns(:migrated_geometry_models).select{|c| c.name == 'geom'}.first
       geom_column.should be_a(SpatialAdapter::SpatialColumn)
-      geom_column.type.should == :geometry
+      geom_column.type.should == :string
       geom_column.geometry_type.should == :point
       geom_column.with_z.should == true
       geom_column.with_m.should == true
@@ -256,7 +256,7 @@ describe "Spatially-enabled Migrations" do
   
       geom_column = @connection.columns(:migrated_geometry_models).select{|c| c.name == 'geom'}.first
       geom_column.should be_a(SpatialAdapter::SpatialColumn)
-      geom_column.type.should == :geometry
+      geom_column.type.should == :string
       geom_column.should be_geographic
       geom_column.geometry_type.should == :point
       geom_column.with_z.should == true
@@ -271,7 +271,7 @@ describe "Spatially-enabled Migrations" do
   
       geom_column = @connection.columns(:migrated_geometry_models).select{|c| c.name == 'geom'}.first
       geom_column.should be_a(SpatialAdapter::SpatialColumn)
-      geom_column.type.should == :geometry
+      geom_column.type.should == :string
       geom_column.should be_geographic
       geom_column.geometry_type.should == :point
       geom_column.with_z.should == false
@@ -286,7 +286,7 @@ describe "Spatially-enabled Migrations" do
   
       geom_column = @connection.columns(:migrated_geometry_models).select{|c| c.name == 'geom'}.first
       geom_column.should be_a(SpatialAdapter::SpatialColumn)
-      geom_column.type.should == :geometry
+      geom_column.type.should == :string
       geom_column.should be_geographic
       geom_column.geometry_type.should == :point
       geom_column.with_z.should == true
@@ -301,7 +301,7 @@ describe "Spatially-enabled Migrations" do
       geom_column = @connection.columns(:migrated_geometry_models).select{|c| c.name == 'geom'}.first
       geom_column.should be_a(SpatialAdapter::SpatialColumn)
       geom_column.geometry_type.should == :geometry
-      geom_column.type.should == :geometry
+      geom_column.type.should == :string
       geom_column.with_z.should == false
       geom_column.with_m.should == false
       geom_column.srid.should == 4326

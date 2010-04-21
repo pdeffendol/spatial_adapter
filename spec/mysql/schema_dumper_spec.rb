@@ -41,7 +41,7 @@ describe "Spatially-enabled Schema Dumps" do
     geom_column = columns.select{|c| c.name == 'geom'}.first
     geom_column.should be_a(SpatialAdapter::SpatialColumn)
     geom_column.geometry_type.should == :point
-    geom_column.type.should == :geometry
+    geom_column.type.should == :string
   end
   
   it "should preserve spatial indexes" do

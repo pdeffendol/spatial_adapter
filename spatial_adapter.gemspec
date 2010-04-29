@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{spatial_adapter}
-  s.version = "1.1.0"
+  s.version = "1.1.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Pete Deffendol"]
-  s.date = %q{2010-04-20}
+  s.date = %q{2010-04-29}
   s.description = %q{Provides enhancements to ActiveRecord to handle spatial datatypes in PostgreSQL and MySQL.}
   s.email = %q{pete@fragility.us}
   s.extra_rdoc_files = [
@@ -27,6 +27,7 @@ Gem::Specification.new do |s|
      "lib/spatial_adapter/common/table_definition.rb",
      "lib/spatial_adapter/mysql.rb",
      "lib/spatial_adapter/postgresql.rb",
+     "lib/spatial_adapter/railtie.rb",
      "rails/init.rb"
   ]
   s.homepage = %q{http://github.com/fragility/spatial_adapter}

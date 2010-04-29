@@ -330,22 +330,36 @@ describe "Spatially-enabled Migrations" do
       end
     end
 
+    SpatialAdapter.geometry_data_types.keys.each do |type|
+      it "should remove #{type.to_s} geography columns using ALTER TABLE DROP COLUMN" do
+        ActiveRecord::Schema.define do
+          create_table :migrated_geometry_models, :force => true do |t|
+            t.integer :extra
+            t.send(type, :geom, :geographic => true)
+          end
+        end
 
-  SpatialAdapter.geometry_data_types.keys.each do |type|
-    it "should remove #{type.to_s} geography columns using ALTER TABLE DROP COLUMN" do
+        @connection.should_receive(:execute).with(/alter table.*migrated_geometry_models.*drop.*geom/i)
+        ActiveRecord::Schema.define do
+          remove_column :migrated_geometry_models, :geom
+        end
+        @connection.should_receive(:execute).with(anything())
+      end
+    end
+    
+    it "should still remove non-spatial columns using ALTER TABLE DROP COLUMN" do
       ActiveRecord::Schema.define do
         create_table :migrated_geometry_models, :force => true do |t|
           t.integer :extra
-          t.send(type, :geom, :geographic => true)
+          t.point   :geom
         end
       end
 
-      @connection.should_receive(:execute).with(/alter table.*migrated_geometry_models.*drop.*geom/i)
+      @connection.should_receive(:execute).with(/alter table.*migrated_geometry_models.*drop.*extra/i)
       ActiveRecord::Schema.define do
-        remove_column :migrated_geometry_models, :geom
+        remove_column :migrated_geometry_models, :extra
       end
       @connection.should_receive(:execute).with(anything())
     end
-  end
   end
 end

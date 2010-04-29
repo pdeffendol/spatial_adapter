@@ -99,7 +99,7 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
     columns(table_name).each do |col|
       if column_names.include?(col.name.to_sym)
         # Geometry columns have to be removed using DropGeometryColumn
-        if col.spatial? && !col.geographic?
+        if col.is_a?(SpatialColumn) && col.spatial? && !col.geographic?
           execute "SELECT DropGeometryColumn('#{table_name}','#{col.name}')"
         else
           original_remove_column(table_name, col.name)

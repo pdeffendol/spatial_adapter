@@ -1,4 +1,3 @@
-$:.unshift(File.join(File.dirname(__FILE__) ,'../../gems/georuby/lib/'))
 require 'rubygems'
 require 'spec/rake/spectask'
 

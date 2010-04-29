@@ -3,11 +3,6 @@
 # This will load the adapter for the currently used database configuration, if
 # it exists.
 
-module SpatialAdapter
-  class NotCompatibleError < ::StandardError
-  end
-end
-
 begin
   adapter = ActiveRecord::Base.configurations[RAILS_ENV]['adapter']
   require "spatial_adapter/#{adapter}"

@@ -14,7 +14,7 @@ begin
     gem.name = "spatial_adapter"
     gem.summary = "Spatial Adapter for ActiveRecord"
     gem.description = "Provides enhancements to ActiveRecord to handle spatial datatypes in PostgreSQL and MySQL."
-    gem.author = "Pete Deffendol"
+    gem.authors = ["Pete Deffendol", "Guilhem Vellut"]
     gem.email = "pete@fragility.us"
     gem.homepage = "http://github.com/fragility/spatial_adapter"
     

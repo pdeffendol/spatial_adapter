@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
   s.version = "1.1.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
-  s.authors = ["Pete Deffendol"]
+  s.authors = ["Pete Deffendol", "Guilhem Vellut"]
   s.date = %q{2010-04-29}
   s.description = %q{Provides enhancements to ActiveRecord to handle spatial datatypes in PostgreSQL and MySQL.}
   s.email = %q{pete@fragility.us}

@@ -1,4 +1,4 @@
-# Rails initialization
+# Rails initialization (for Rails 2.x)
 #
 # This will load the adapter for the currently used database configuration, if
 # it exists.

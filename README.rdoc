@@ -28,9 +28,13 @@ dependencies as well.
 
   gem install spatial_adapter
   
-In a Rails app, you can add a gem dependency in environment.rb:
+In a Rails 2.x app, you can add a gem dependency in environment.rb:
 
-  config.gem "spatial_adapter"
+  config.gem 'spatial_adapter'
+  
+In a Rails 3 app, add a gem dependency to Gemfile:
+
+  gem 'spatial_adapter'
   
 === As a Rails Plugin
 

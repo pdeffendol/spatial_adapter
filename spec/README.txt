@@ -6,7 +6,7 @@ You will need to set up empty databases for each adapter you want to test.
 
 Create an empty database "spatial_adapter" and ensure that the PostGIS extensions are loaded.  
 
-run "rake spec:postgis" to run the specs
+run "rake spec:postgresql" to run the specs
 
 == MySQL
 

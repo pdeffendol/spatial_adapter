@@ -1,7 +1,7 @@
 require 'rubygems'
 require 'spec/rake/spectask'
 
-[:mysql, :postgresql].each do |adapter|
+[:mysql, :mysql2, :postgresql].each do |adapter|
   desc "Run specs for #{adapter} adapter"
   Spec::Rake::SpecTask.new("spec:#{adapter.to_s}") do |t|
     t.spec_files = FileList["spec/#{adapter}/*_spec.rb"]

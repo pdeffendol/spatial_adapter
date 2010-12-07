@@ -14,3 +14,9 @@ Create an empty database "spatial_adapter" - the spatial extensions are already 
 
 run "rake spec:mysql" to run the specs
 
+== MySQL2
+
+Create an empty database "spatial_adapter" - the spatial extensions are already available.
+
+run "rake spec:mysql2" to run the specs
+

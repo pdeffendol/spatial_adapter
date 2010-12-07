@@ -32,7 +32,6 @@ ActiveRecord::ConnectionAdapters::Mysql2Adapter.class_eval do
       klass = field[1] =~ /geometry|point|linestring|polygon|multipoint|multilinestring|multipolygon|geometrycollection/i ? ActiveRecord::ConnectionAdapters::SpatialMysql2Column : ActiveRecord::ConnectionAdapters::Mysql2Column
       columns << klass.new(field[0], field[4], field[1], field[2] == "YES")
     end
-#    result.free
     columns
   end
 
@@ -55,7 +54,7 @@ ActiveRecord::ConnectionAdapters::Mysql2Adapter.class_eval do
   def indexes(table_name, name = nil)#:nodoc:
     indexes = []
     current_index = nil
-    execute("SHOW KEYS FROM #{table_name}", name).each do |row|
+    (execute("SHOW KEYS FROM #{table_name}", name) || []).each do |row|
       if current_index != row[2]
         next if row[2] == "PRIMARY" # skip the primary key
         current_index = row[2]
@@ -69,7 +68,7 @@ ActiveRecord::ConnectionAdapters::Mysql2Adapter.class_eval do
   #Get the table creation options : Only the engine for now. The text encoding could also be parsed and returned here.
   def options_for(table)
     result = execute("show table status like '#{table}'")
-    engine = result.fetch_row[1]
+    engine = result.first[1]
     if engine !~ /inno/i #inno is default so do nothing for it in order not to clutter the migration
       "ENGINE=#{engine}" 
     else

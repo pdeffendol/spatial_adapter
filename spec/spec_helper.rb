@@ -34,6 +34,18 @@ def mysql_connection
   ActiveRecord::Migration.verbose = false
 end
 
+def mysql2_connection
+  ActiveRecord::Base.establish_connection(
+    :adapter => 'mysql2',
+    :database => 'spatial_adapter',
+    :username => 'root',
+    :host => 'localhost'
+  )
+  
+  # Don't output migration logging
+  ActiveRecord::Migration.verbose = false
+end
+
 class GeometryFactory
   class << self
     def point

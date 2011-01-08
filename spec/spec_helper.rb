@@ -1,8 +1,7 @@
 require 'rubygems'
 require 'spec'
 require 'geo_ruby'
-gem 'activerecord', '=2.3.8'
-#gem 'activerecord', '=3.0.0'
+gem 'activerecord', '=3.0.3'
 require 'active_record'
 
 $:.unshift((File.join(File.dirname(__FILE__), '..', 'lib')))

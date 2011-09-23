@@ -32,7 +32,19 @@ def mysql2_connection
     :username => 'root',
     :host => 'localhost'
   )
-  
+
+  # Don't output migration logging
+  ActiveRecord::Migration.verbose = false
+end
+
+def jdbcmysql_connection
+  ActiveRecord::Base.establish_connection(
+    :adapter => 'jdbcmysql',
+    :database => 'spatial_adapter',
+    :username => 'root',
+    :host => 'localhost'
+  )
+
   # Don't output migration logging
   ActiveRecord::Migration.verbose = false
 end

@@ -1,54 +1,51 @@
-require 'spec_helper'
-require 'spatial_adapter/mysql2'
+shared_examples_for 'spatially enabled schema dump' do
+  let(:establish){ mysql_connection }
 
-describe "Spatially-enabled Schema Dumps" do
+  let(:connection) do
+    establish
+    ActiveRecord::Base.connection
+  end
+
   before :all do
-    mysql2_connection
-    @connection = ActiveRecord::Base.connection
-
-    # Create a new table
     ActiveRecord::Schema.define do
       create_table :migrated_geometry_models, :options=> "ENGINE=MyISAM", :force => true do |t|
         t.integer :extra
         t.point   :geom, :null => false
       end
-      add_index :migrated_geometry_models, :geom, :spatial => true, :name => 'test_spatial_index'
+      add_index :migrated_geometry_models, :geom, :spatial => true,
+        :name => 'test_spatial_index'
     end
 
-    File.open('schema.rb', "w") do |file|
-      ActiveRecord::SchemaDumper.dump(@connection, file)
+    File.open('schema.rb', "w:UTF-8") do |file|
+      ActiveRecord::SchemaDumper.dump(connection, file)
     end
-    
-    # Drop the original table
-    @connection.drop_table "migrated_geometry_models"
-    
-    # Load the dumped schema
+
+    connection.drop_table "migrated_geometry_models"
+
     load('schema.rb')
   end
-  
+
   after :all do
-    # delete the schema file
     File.delete('schema.rb')
 
-    # Drop the new table
-    @connection.drop_table "migrated_geometry_models"
+    connection.drop_table "migrated_geometry_models"
   end
-  
+
   it "should preserve spatial attributes of tables" do
-    columns = @connection.columns("migrated_geometry_models")
-    
+    columns = connection.columns("migrated_geometry_models")
+
     columns.should have(3).items
     geom_column = columns.select{|c| c.name == 'geom'}.first
     geom_column.should be_a(SpatialAdapter::SpatialColumn)
     geom_column.geometry_type.should == :point
     geom_column.type.should == :string
   end
-  
+
   it "should preserve spatial indexes" do
-    indexes = @connection.indexes("migrated_geometry_models")
-    
+    indexes = connection.indexes("migrated_geometry_models")
+
     indexes.should have(1).item
-    
+
     indexes.first.name.should == 'test_spatial_index'
     indexes.first.columns.should == ["geom"]
     indexes.first.spatial.should == true

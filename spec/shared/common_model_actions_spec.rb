@@ -1,5 +1,5 @@
-share_as :CommonModelActions do
-  describe 'finding records' do
+shared_examples_for 'common model actions' do
+  context 'finding records' do
     it 'should retrieve Point objects' do
       model = PointModel.create(:extra => 'test', :geom => GeometryFactory.point)
       PointModel.find(model.id).geom.should == GeometryFactory.point

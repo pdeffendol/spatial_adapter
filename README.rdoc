@@ -16,7 +16,7 @@ The following gems are required:
 For PostgreSQL:
 
 - PostGIS version 1.4.0 or higher should be installed in your database
- 
+
 == Installation
 
 Choose ONE of the following installation methods.  You shouldn't have to do both.
@@ -27,15 +27,15 @@ This is the preferred method of installation, and will pull in the required
 dependencies as well.
 
   gem install spatial_adapter
-  
+
 In a Rails 2.x app, you can add a gem dependency in environment.rb:
 
   config.gem 'spatial_adapter'
-  
+
 In a Rails 3 app, add a gem dependency to Gemfile:
 
   gem 'spatial_adapter'
-  
+
 === As a Rails Plugin
 
 In your Rails project, run the following:
@@ -50,18 +50,20 @@ Choose the database type for which you would like to use spatial_adapter, and
 load each with
 
   require 'spatial_adapter/[database]'
-  
+
 where [database] should be replaced with one of the following:
 
 - postgresql
 - mysql
-  
+- mysql2
+- jdbcmysql
+
 For example to use the PostgreSQL spatial adapter:
 
   require 'spatial_adapter/postgresql'
-  
-In a Rails app, spatial_adapter will automatically load the adapter for the database
-specified in your database.yml configuration.
+
+In a Rails app, spatial_adapter will automatically load the adapter for the
+database specified in your database.yml configuration.
 
 == Operations
 
@@ -73,13 +75,13 @@ and loaded in migrations the same way as columns of basic types.
 
 Here is an example of code for the creation of a table with a geometric column
 in PostGIS, along with the addition of a spatial index on the column:
- 
+
   ActiveRecord::Schema.define do
     create_table :table_points, :force => true do |t|
       t.string :data
       t.point :geom, :null => false, :srid => 123, :with_z => true
     end
-  
+
     add_index :table_points, :geom, :spatial => true
   end
 
@@ -90,15 +92,15 @@ Here is a related statement valid for MySql version <= 5.0.16:
       t.string :data
       t.point :geom, :null => false
     end
-  
+
     add_index :table_points, :geom, :spatial => true
   end
-  
+
 === Differences Between Databases
 
-- On all versions of MySQL, the :srid, :with_z, and :with_m options are ignored, since
-  they are not supported. 
-  
+- On all versions of MySQL, the :srid, :with_z, and :with_m options are ignored,
+  since they are not supported.
+
 - On MySQL versions <= 5.0.16, you have to add <tt>:options =>
   "ENGINE=MyISAM"</tt> to the create_table statement, since only MyISAM tables
   can have spatial columns.  In addition, only MyISAM tables may have spatial
@@ -161,7 +163,7 @@ library (http://georuby.rubyforge.org/): This is where the
 
     place = Place.find_first
     place.the_geom.y=123456.7 # this doesn't work
- 
+
   Since the translation to a geometry is performed every time the_geom is read,
   the change to y will not be saved! You would have to do something like this:
 
@@ -195,3 +197,14 @@ These will hopefully be added back in the near future.
 
 Any questions, enhancement proposals, bug notifications or corrections can be
 made via the project page at http://github.com/fragility/spatial_adapter
+
+== Running Tests
+
+The gem depdencencies can be installed with `bundle install`.
+
+You will need to set up an empty database named `spatial_adapter` for each
+adapter you want to test.
+
+Tests are partitioned by adapter and can be run using separate rake task.
+
+    bundle exec rake spec:[adapter]

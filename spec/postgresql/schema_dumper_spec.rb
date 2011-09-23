@@ -20,18 +20,18 @@ describe "Spatially-enabled Schema Dumps" do
       end
     end
 
-    File.open('schema.rb', "w") do |file|
+    File.open('schema.rb', "w:UTF-8") do |file|
       ActiveRecord::SchemaDumper.dump(@connection, file)
     end
-    
+
     # Drop the original tables
     @connection.drop_table "migrated_geometry_models"
     @connection.drop_table "migrated_geography_models"
-    
+
     # Load the dumped schema
     load('schema.rb')
   end
-  
+
   after :all do
     # delete the schema file
     File.delete('schema.rb')
@@ -40,10 +40,10 @@ describe "Spatially-enabled Schema Dumps" do
     @connection.drop_table "migrated_geometry_models"
     @connection.drop_table "migrated_geography_models"
   end
-  
+
   it "should preserve spatial attributes of geometry tables" do
     columns = @connection.columns("migrated_geometry_models")
-    
+
     columns.should have(3).items
     geom_column = columns.select{|c| c.name == 'geom'}.first
     geom_column.should be_a(SpatialAdapter::SpatialColumn)
@@ -53,10 +53,10 @@ describe "Spatially-enabled Schema Dumps" do
     geom_column.with_m.should == true
     geom_column.srid.should == 4326
   end
-  
+
   it "should preserve spatial attributes of geography tables" do
     columns = @connection.columns("migrated_geography_models")
-    
+
     columns.should have(3).items
     geom_column = columns.select{|c| c.name == 'geom'}.first
     geom_column.should be_a(SpatialAdapter::SpatialColumn)
@@ -66,12 +66,12 @@ describe "Spatially-enabled Schema Dumps" do
     geom_column.with_m.should == true
     geom_column.should be_geographic
   end
-  
+
   it "should preserve spatial indexes" do
     indexes = @connection.indexes("migrated_geometry_models")
-    
+
     indexes.should have(1).item
-    
+
     indexes.first.name.should == 'test_spatial_index'
     indexes.first.columns.should == ["geom"]
     indexes.first.spatial.should == true

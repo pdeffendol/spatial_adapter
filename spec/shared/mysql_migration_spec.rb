@@ -1,20 +1,19 @@
-require 'spec_helper'
-require 'spatial_adapter/mysql2'
-
 class MigratedGeometryModel < ActiveRecord::Base
 end
 
-describe "Spatially-enabled Migrations" do
-  before :each do
-    mysql2_connection
-    @connection = ActiveRecord::Base.connection
+shared_examples_for 'spatially enabled migrations' do
+  let(:establish){ mysql_connection }
+
+  let(:connection) do
+    establish
+    ActiveRecord::Base.connection
   end
-  
-  describe "creating tables" do
+
+  context "creating tables" do
     after :each do
-      @connection.drop_table "migrated_geometry_models"
+      connection.drop_table "migrated_geometry_models"
     end
-    
+
     SpatialAdapter.geometry_data_types.keys.each do |type|
       it "should create #{type.to_s} columns" do
         ActiveRecord::Schema.define do
@@ -24,7 +23,8 @@ describe "Spatially-enabled Migrations" do
           end
         end
 
-        geom_column = @connection.columns(:migrated_geometry_models).select{|c| c.name == 'geom'}.first
+        geom_column = connection \
+          .columns(:migrated_geometry_models).select{|c| c.name == 'geom'}.first
         geom_column.should be_a(SpatialAdapter::SpatialColumn)
         geom_column.geometry_type.should == type
         geom_column.type.should == :string
@@ -32,7 +32,7 @@ describe "Spatially-enabled Migrations" do
     end
   end
 
-  describe "adding columns" do
+  context "adding columns" do
     before :each do
       ActiveRecord::Schema.define do
         create_table :migrated_geometry_models, :force => true do |t|
@@ -40,9 +40,9 @@ describe "Spatially-enabled Migrations" do
         end
       end
     end
-    
+
     after :each do
-      @connection.drop_table "migrated_geometry_models"
+      connection.drop_table "migrated_geometry_models"
     end
 
     SpatialAdapter.geometry_data_types.keys.each do |type|
@@ -51,7 +51,7 @@ describe "Spatially-enabled Migrations" do
           add_column :migrated_geometry_models, :geom, type
         end
 
-        geom_column = @connection.columns(:migrated_geometry_models).select{|c| c.name == 'geom'}.first
+        geom_column = connection.columns(:migrated_geometry_models).select{|c| c.name == 'geom'}.first
         geom_column.should be_a(SpatialAdapter::SpatialColumn)
         geom_column.geometry_type.should == type
         geom_column.type.should == :string

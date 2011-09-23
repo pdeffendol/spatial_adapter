@@ -1,0 +1,5 @@
+require 'spec_helper'
+require 'postgresql/connection_adapter_spec'
+require 'postgresql/migration_spec'
+require 'postgresql/models_spec'
+require 'postgresql/schema_dumper_spec'

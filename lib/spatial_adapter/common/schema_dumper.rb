@@ -123,7 +123,7 @@ ActiveRecord::SchemaDumper.class_eval do
     spec[:default]   = default_string(column.default) if column.has_default?
 
     # Additions for spatial columns
-    if column.is_a?(SpatialColumn)
+    if column.is_a?(::SpatialAdapter::SpatialColumn)
       # Override with specific geometry type
       spec[:type]    = column.geometry_type.to_s
       spec[:srid]    = column.srid.inspect if column.srid != -1

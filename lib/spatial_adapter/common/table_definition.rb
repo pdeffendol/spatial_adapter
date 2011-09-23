@@ -1,14 +1,12 @@
-include SpatialAdapter
+require 'spatial_adapter'
 
-ActiveRecord::ConnectionAdapters::TableDefinition.class_eval do
-  SpatialAdapter.geometry_data_types.keys.each do |column_type|
-    class_eval <<-EOV
-      def #{column_type}(*args)
-        options = args.extract_options!
-        column_names = args
-      
-        column_names.each { |name| column(name, '#{column_type}', options) }
+class ActiveRecord::ConnectionAdapters::TableDefinition
+  SpatialAdapter.geometry_data_types.keys.each do |column_name|
+    define_method(column_name) do |*args|
+      options = args.extract_options!
+      args.each do |name|
+        column(name, column_name, options)
       end
-    EOV
+    end
   end
 end

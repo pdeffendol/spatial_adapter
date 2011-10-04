@@ -55,7 +55,7 @@ ActiveRecord::ConnectionAdapters::MysqlAdapter.class_eval do
   def indexes(table_name, name = nil)#:nodoc:
     indexes = []
     current_index = nil
-    execute("SHOW KEYS FROM #{table_name}", name).each do |row|
+    (execute("SHOW KEYS FROM #{table_name}", name) || []).each do |row|
       if current_index != row[2]
         next if row[2] == "PRIMARY" # skip the primary key
         current_index = row[2]

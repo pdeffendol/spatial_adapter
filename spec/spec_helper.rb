@@ -20,7 +20,7 @@ def mysql_connection
     :username => 'root',
     :host => 'localhost'
   )
-  
+
   # Don't output migration logging
   ActiveRecord::Migration.verbose = false
 end

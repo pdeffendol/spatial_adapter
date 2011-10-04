@@ -9,11 +9,11 @@ module SpatialAdapter
       @with_z = with_z
       @with_m = with_m
     end
-  
+
     def spatial?
       !@geometry_type.nil?
     end
-    
+
     def geographic?
       false
     end
@@ -25,9 +25,9 @@ module SpatialAdapter
       spatial? ? self.class.string_to_geometry(value) : super
     end
 
-    #Redefines type_cast_code to add support for geometries. 
+    #Redefines type_cast_code to add support for geometries.
     #
-    #WARNING : Since ActiveRecord keeps only the string values directly returned from the database, it translates from these to the correct types everytime an attribute is read (using the code returned by this method), which is probably ok for simple types, but might be less than efficient for geometries. Also you cannot modify the geometry object returned directly or your change will not be saved. 
+    #WARNING : Since ActiveRecord keeps only the string values directly returned from the database, it translates from these to the correct types everytime an attribute is read (using the code returned by this method), which is probably ok for simple types, but might be less than efficient for geometries. Also you cannot modify the geometry object returned directly or your change will not be saved.
     # alias_method :type_cast_code_without_spatial, :type_cast_code
     def type_cast_code(var_name)
       spatial? ? "#{self.class.name}.string_to_geometry(#{var_name})" : super

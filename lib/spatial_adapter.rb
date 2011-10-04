@@ -28,7 +28,7 @@ module SpatialAdapter
       :geometry => { :name => "GEOMETRY"}
     }
   end
-  
+
   class NotCompatibleError < ::StandardError
   end
 end

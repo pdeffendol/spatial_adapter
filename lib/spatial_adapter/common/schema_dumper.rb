@@ -3,7 +3,7 @@ ActiveRecord::SchemaDumper.ignore_tables << "spatial_ref_sys" << "geometry_colum
 ActiveRecord::SchemaDumper.class_eval do
   # These are the valid options for a column specification (spatial options added)
   VALID_COLUMN_SPEC_KEYS = [:name, :limit, :precision, :scale, :default, :null, :srid, :with_z, :with_m, :geographic]
-  
+
   def table(table, stream)
     columns = @connection.columns(table)
     begin
@@ -15,7 +15,7 @@ ActiveRecord::SchemaDumper.class_eval do
       elsif @connection.respond_to?(:primary_key)
         pk = @connection.primary_key(table)
       end
-      
+
       tbl.print "  create_table #{table.inspect}"
       if columns.detect { |c| c.name == pk }
         if pk != 'id'
@@ -24,13 +24,13 @@ ActiveRecord::SchemaDumper.class_eval do
       else
         tbl.print ", :id => false"
       end
-      
+
       # Added by Spatial Adapter to ensure correct MySQL table engine
       if @connection.respond_to?(:options_for)
         res = @connection.options_for(table)
         tbl.print ", :options=>'#{res}'" if res
       end
-      
+
       tbl.print ", :force => true"
       tbl.puts " do |t|"
 
@@ -69,7 +69,7 @@ ActiveRecord::SchemaDumper.class_eval do
 
       tbl.puts "  end"
       tbl.puts
-      
+
       indexes(table, tbl)
 
       tbl.rewind
@@ -79,10 +79,10 @@ ActiveRecord::SchemaDumper.class_eval do
       stream.puts "#   #{e.message}"
       stream.puts
     end
-    
+
     stream
   end
-  
+
 
   def indexes(table, stream)
     if (indexes = @connection.indexes(table)).any?
@@ -101,14 +101,14 @@ ActiveRecord::SchemaDumper.class_eval do
       stream.puts
     end
   end
-  
+
   private
-  
+
   # Build specification for a table column
   def column_spec(column)
     spec = {}
     spec[:name]      = column.name.inspect
-    
+
     # AR has an optimisation which handles zero-scale decimals as integers.  This
     # code ensures that the dumper still dumps the column as a decimal.
     spec[:type]      = if column.type == :integer && [/^numeric/, /^decimal/].any? { |e| e.match(column.sql_type) }
@@ -121,7 +121,7 @@ ActiveRecord::SchemaDumper.class_eval do
     spec[:scale]     = column.scale.inspect if !column.scale.nil?
     spec[:null]      = 'false' if !column.null
     spec[:default]   = default_string(column.default) if column.has_default?
-    
+
     # Additions for spatial columns
     if column.is_a?(SpatialColumn)
       # Override with specific geometry type

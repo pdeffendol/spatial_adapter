@@ -5,8 +5,8 @@ ActiveRecord::Schema.define() do
   execute "create table point_models
     (
     	id int(11) DEFAULT NULL auto_increment PRIMARY KEY,
-    	extra varchar(255),
-    	more_extra varchar(255),
+    	extra varchar(100),
+    	more_extra varchar(100),
     	geom  point not null
     ) ENGINE=MyISAM"
   execute "create spatial index index_point_models_on_geom on point_models (geom)"
@@ -16,7 +16,7 @@ ActiveRecord::Schema.define() do
   execute "create table line_string_models
     (
     	id int(11) DEFAULT NULL auto_increment PRIMARY KEY,
-    	extra varchar(255),
+    	extra varchar(100),
     	geom linestring
     ) ENGINE=MyISAM"
     
@@ -24,7 +24,7 @@ ActiveRecord::Schema.define() do
   execute "create table polygon_models
     (
     	id int(11) DEFAULT NULL auto_increment PRIMARY KEY,
-    	extra varchar(255),
+    	extra varchar(100),
     	geom polygon
     ) ENGINE=MyISAM"
     
@@ -32,7 +32,7 @@ ActiveRecord::Schema.define() do
   execute "create table multi_point_models
     (
     	id int(11) DEFAULT NULL auto_increment PRIMARY KEY,
-    	extra varchar(255),
+    	extra varchar(100),
     	geom multipoint
     ) ENGINE=MyISAM"
     
@@ -40,7 +40,7 @@ ActiveRecord::Schema.define() do
   execute "create table multi_line_string_models
     (
     	id int(11) DEFAULT NULL auto_increment PRIMARY KEY,
-    	extra varchar(255),
+    	extra varchar(100),
     	geom multilinestring
     ) ENGINE=MyISAM"
     
@@ -48,7 +48,7 @@ ActiveRecord::Schema.define() do
   execute "create table multi_polygon_models
     (
     	id int(11) DEFAULT NULL auto_increment PRIMARY KEY,
-    	extra varchar(255),
+    	extra varchar(100),
     	geom multipolygon
     ) ENGINE=MyISAM"
     
@@ -56,7 +56,7 @@ ActiveRecord::Schema.define() do
   execute "create table geometry_collection_models
     (
     	id int(11) DEFAULT NULL auto_increment PRIMARY KEY,
-    	extra varchar(255),
+    	extra varchar(100),
     	geom geometrycollection
     ) ENGINE=MyISAM"
     
@@ -64,7 +64,7 @@ ActiveRecord::Schema.define() do
   execute "create table geometry_models
     (
     	id int(11) DEFAULT NULL auto_increment PRIMARY KEY,
-    	extra varchar(255),
+    	extra varchar(100),
     	geom geometry
     ) ENGINE=MyISAM"
 end

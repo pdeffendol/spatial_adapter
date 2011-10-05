@@ -9,7 +9,7 @@ module SpatialAdapter::Base::Mysql
     def self.included klass
       klass.class_eval do
         def native_database_types
-          (defined?(NATIVE_DATABASE_TYPES) ? NATIVE_DATABASE_TYPES : super()) \
+          (defined?(self.class::NATIVE_DATABASE_TYPES) ? self.class::NATIVE_DATABASE_TYPES : super) \
             .merge(SpatialAdapter.geometry_data_types)
         end
 
